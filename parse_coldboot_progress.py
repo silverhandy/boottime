@@ -2,26 +2,32 @@
 
 import os, sys, time, string
 
-import matplotlib as pl
-from matplotlib.ticker import MultipleLocator, FuncFormatter
-import numpy as np
-
-class stage_node:
-    def __init__(self, name, filterkey):
+class p_node:
+    def __init__(self, name):
         self.name = name
-        self.filterkey = filterkey
         self.seconds = 0.0
 
-    def time_set(self, seconds):
-        self.seconds = seconds
+    def time_set(self, timestamp):
+        timestamps = timestamp.split(':')
+        self.seconds = int(timestamps[0])*3600 + int(timestamps[1])*60 + float(timestamps[2])
 
-class stage_parser:
+class stage_node(p_node):
+    def __init__(self, name, filterkey):
+        p_node.__init__(self, name)
+        self.filterkey = filterkey
+
+class svc_node(p_node):
+    def __init__(self, name):
+        p_node.__init__(self, name)
+
+class bootpgs_parser:
     def __init__(self):
         self.nodeList = []
         self.outputDir = ""
         self.dmesgFile = "dmesg.log"
         self.logcatFile = "logcat.log"
         self.resultFile = "out.result"
+        self.initrc_parser = initrc_parser()
 
     def initStageFramework(self):
         self.nodeList.append(stage_node("init_start", "init started"))
@@ -53,7 +59,9 @@ class stage_parser:
         os.system(dmesgCommand)
         print("... Get logcat log ...")
         os.system(logcatCommand)
-
+        print("... Get init.*.rc ...")
+        self.initrc_parser.dump_initrc()
+        
     def parseLogs(self):
         print("... Parse logcat log ...")
         with open(self.outputDir+self.logcatFile) as f:
@@ -63,21 +71,44 @@ class stage_parser:
                 if l.find(node.filterkey) != -1:
                     #print("find ... " + node.filterkey)
                     timestamp = l.split()[1]
-                    timestamps = timestamp.split(':')
-                    seconds = int(timestamps[0])*3600 + int(timestamps[1])*60 + float(timestamps[2])
-                    node.time_set(seconds)
+                    node.time_set(timestamp)
                     break
+            self.initrc_parser.parse_service_line(l)
 
     def showResult(self):
-        print("... Show Result ...")
+        print("... show boot_progress result ...")
         print("---------------------")
         for node in self.nodeList:
             print(node.name + ":\t\t" + str(node.seconds))
+        self.initrc_parser.showResult()
+
+class initrc_parser:
+    def __init__(self):
+        self.filter_svc = "Starting service"
+        self.svcList = []
+
+    def dump_initrc(self):
+        pass
+
+    def parse_service_line(self, line):
+        if line.find(self.filter_svc) != -1:
+            timestamp = line.split()[1]
+            svc_name = line.split(self.filter_svc)[1].split('...')[0]
+            svcnode = svc_node(svc_name)
+            svcnode.time_set(timestamp)
+            self.svcList.append(svcnode)
+
+    def showResult(self):
+        print("... show service_start result ...")
+        print("-------------------")
+        for node in self.svcList:
+            print(node.name + ":\t\t\t" + str(node.seconds))
 
 if __name__ == '__main__':
-    parser = stage_parser()
+    parser = bootpgs_parser()
     parser.initStageFramework()
     parser.getLogs()
     parser.parseLogs()
     parser.showResult()
+
 
