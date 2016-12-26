@@ -1,15 +1,19 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-import os, sys, time, string, commands
+import os, sys, time, string, commands, json
 
 class p_node:
     def __init__(self, name):
         self.name = name
         self.seconds = 0.0
+        self.rank = 0
 
-    def time_set(self, timestamp):
+    def time_set(self, timestamp, timebase):
         timestamps = timestamp.split(':')
         self.seconds = int(timestamps[0])*3600 + int(timestamps[1])*60 + float(timestamps[2])
+        timebase = timebase.split(':')
+        self.seconds = self.seconds - (int(timebase[0])*3600 + int(timebase[1])*60 + float(timebase[2]))
 
 class stage_node(p_node):
     def __init__(self, name, filterkey, rank):
@@ -21,6 +25,7 @@ class svc_node(p_node):
     def __init__(self, name):
         p_node.__init__(self, name)
         self.phase = ''
+        self.rank = 2
 
     def phase_set(self, phase):
         self.phase = phase
@@ -34,33 +39,12 @@ class bootpgs_parser:
         self.resultFile = "out.result"
         self.initrc_parser = initrc_parser()
 
-    def initStageFramework(self):
-        self.nodeList.append(stage_node("init_start", "init started", 1))
-        self.nodeList.append(stage_node("initializing_selinux", "Initializing SELinux enforcing took", 2))
-        self.nodeList.append(stage_node(".coldboot_done", "Waiting for /dev/.coldboot_done took", 2))
-        
-        self.nodeList.append(stage_node("load_default_prop", "Loading properties from /default.prop took", 2))
-        self.nodeList.append(stage_node("load_system_prop", "Loading properties from /system/build.prop took", 2))
-        self.nodeList.append(stage_node("load_vendor_prop", "Loading properties from /vendor/build.prop took", 2))
-        self.nodeList.append(stage_node("load_factory_prop", "Loading properties from /factory/factory.prop took", 2))
-        self.nodeList.append(stage_node("load_data_local_prop", "Loading properties from /data/local.prop took", 2))
-        
-        self.nodeList.append(stage_node("cache_mount", "check_fs(): unmount(/cache)", 2))
-        self.nodeList.append(stage_node("config_mount", "check_fs(): unmount(/config)", 2))
-        self.nodeList.append(stage_node("data_mount", "check_fs(): unmount(/data)", 2))
-
-        self.nodeList.append(stage_node("zygote_start", "START com.android.internal.os.ZygoteInit", 1))
-        self.nodeList.append(stage_node("preload_start", "boot_progress_preload_start", 1))
-        self.nodeList.append(stage_node("preload_end", "boot_progress_preload_end", 1))
-        self.nodeList.append(stage_node("system_run", "boot_progress_system_run", 1))
-        self.nodeList.append(stage_node("pms_system_scan_start", "boot_progress_pms_system_scan_start", 1))
-        self.nodeList.append(stage_node("pms_data_scan_start", "boot_progress_pms_data_scan_start", 1))
-        self.nodeList.append(stage_node("pms_scan_end", "boot_progress_pms_scan_end", 1))
-        self.nodeList.append(stage_node("pms_ready", "boot_progress_pms_ready", 1))
-        self.nodeList.append(stage_node("ams_ready", "boot_progress_ams_ready", 1))
-        self.nodeList.append(stage_node("enable_screen", "boot_progress_enable_screen", 1))
-        #self.nodeList.append(stage_node("display_launcher", "Displayed com.google.android.googlequicksearchbox/com.google.android.launcher.GEL"))
-        self.nodeList.append(stage_node("bootanim_exit", "Service 'bootanim'", 1))
+    def initStages(self):
+        with open('coldboot_progress.json', 'r') as f:
+            data = json.load(f)
+        for i in data["stage"]:
+            #print(i["name"], i["filter"], i["rank"])
+            self.nodeList.append(stage_node(i["name"], i["filter"], i["rank"]))
 
     def getLogs(self):
         logDir = "logs/"
@@ -81,18 +65,25 @@ class bootpgs_parser:
         self.initrc_parser.dump_initrc(self.outputDir)
         
     def parseLogs(self):
+        timebase = ''
         print("... Parse logcat log ...")
         with open(self.outputDir+self.logcatFile) as f:
             lines = f.readlines()
         for l in lines:
+            if l.find('Linux version') != -1:
+                timebase = l.split()[1]
+                continue
             for node in self.nodeList:
-                if l.find(node.filterkey) != -1:
-                    #print("find ... " + node.filterkey)
+                if hasattr(node, "filterkey") and l.find(node.filterkey) != -1:
+                    print("find ... " + node.filterkey)
                     timestamp = l.split()[1]
-                    node.time_set(timestamp)
+                    node.time_set(timestamp, timebase)
                     break
-            self.initrc_parser.parse_service_line(l)
+
+            self.initrc_parser.parse_service_line(l, timebase, self.nodeList)
         self.initrc_parser.parse_initrc(self.outputDir)
+
+        self.nodeList.sort(key=lambda x:x.seconds)
 
     def showResult(self):
         out = open(self.outputDir + self.resultFile,'a')
@@ -139,6 +130,10 @@ class initrc_parser:
         self.initrcList.append('init.usb.rc')
         self.initrcList.append('init.zygote32.rc')
         self.initrcList.append('init.zygote64_32.rc')
+        self.initrcList.append('init.debug-charging.rc')
+        self.initrcList.append('init.diag.rc')
+        self.initrcList.append('init.lmdump.rc')
+        self.initrcList.append('init.telephony-config.rc')
        
         for i in self.initrcList:
             os.system('adb pull  ' + i + ' ./' + outputDir)
@@ -148,6 +143,8 @@ class initrc_parser:
         on_svc = ''
         for i in self.initrcList:
             #print("#### open file:" + './' + outputDir + i)
+            if not os.path.exists('./' + outputDir + i):
+                continue
             with open('./' + outputDir + i) as f:
                 lines = f.readlines()
             for l in lines:
@@ -162,13 +159,14 @@ class initrc_parser:
                             j.phase_set(on_phase)
                             #print("... calling phase_set(" + on_phase + ")")
 
-    def parse_service_line(self, line):
+    def parse_service_line(self, line, timebase, stageList):
         if line.find(self.filter_svc) != -1:
             timestamp = line.split()[1]
             svc_name = line.split(self.filter_svc)[1].split('\'...')[0].lstrip(' \'')
-            svcnode = svc_node(svc_name)
-            svcnode.time_set(timestamp)
+            svcnode = svc_node("service "+svc_name)
+            svcnode.time_set(timestamp, timebase)
             self.svcList.append(svcnode)
+            stageList.append(svcnode)
 
     def showResult(self, resultFile):
         out = open(resultFile,'a')
@@ -183,10 +181,12 @@ class initrc_parser:
         out.close()
 
 if __name__ == '__main__':
+    reload(sys)
+    sys.setdefaultencoding('utf8')
     os.system("adb root")
     time.sleep(2)
     parser = bootpgs_parser()
-    parser.initStageFramework()
+    parser.initStages()
     parser.getLogs()
     parser.parseLogs()
     parser.showResult()
