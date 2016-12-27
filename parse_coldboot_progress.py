@@ -6,14 +6,17 @@ import os, sys, time, string, commands, json
 class p_node:
     def __init__(self, name):
         self.name = name
-        self.seconds = 0.0
+        self.seconds = -1.0
         self.rank = 0
+        self.proc = ''
 
     def time_set(self, timestamp, timebase):
+        #print("timestamp:" + timestamp + ", timebase:" + timebase)
         timestamps = timestamp.split(':')
         self.seconds = int(timestamps[0])*3600 + int(timestamps[1])*60 + float(timestamps[2])
-        timebase = timebase.split(':')
-        self.seconds = self.seconds - (int(timebase[0])*3600 + int(timebase[1])*60 + float(timebase[2]))
+        if not timebase == '':
+            timebase = timebase.split(':')
+            self.seconds = self.seconds - (int(timebase[0])*3600 + int(timebase[1])*60 + float(timebase[2]))
 
 class stage_node(p_node):
     def __init__(self, name, filterkey, rank):
@@ -21,11 +24,16 @@ class stage_node(p_node):
         self.filterkey = filterkey
         self.rank = rank
 
+    def proc_set(self, proc):
+        self.proc = proc
+
 class svc_node(p_node):
-    def __init__(self, name):
+    def __init__(self, name, proc, flag):
         p_node.__init__(self, name)
+        self.proc = proc
         self.phase = ''
         self.rank = 2
+        self.flag = flag
 
     def phase_set(self, phase):
         self.phase = phase
@@ -37,13 +45,13 @@ class bootpgs_parser:
         self.dmesgFile = "dmesg.log"
         self.logcatFile = "logcat.log"
         self.resultFile = "out.result"
-        self.initrc_parser = initrc_parser()
+        self.service_parser = service_parser()
 
     def initStages(self):
         with open('coldboot_progress.json', 'r') as f:
             data = json.load(f)
-        for i in data["stage"]:
-            #print(i["name"], i["filter"], i["rank"])
+        for i in data["coldboot"]["stage"]:
+            # print(i["name"], i["filter"], i["rank"])
             self.nodeList.append(stage_node(i["name"], i["filter"], i["rank"]))
 
     def getLogs(self):
@@ -62,7 +70,7 @@ class bootpgs_parser:
         print("... Get logcat log ...")
         os.system(logcatCommand)
         print("... Get init.*.rc ...")
-        self.initrc_parser.dump_initrc(self.outputDir)
+        self.service_parser.dump_initrc(self.outputDir)
         
     def parseLogs(self):
         timebase = ''
@@ -74,14 +82,17 @@ class bootpgs_parser:
                 timebase = l.split()[1]
                 continue
             for node in self.nodeList:
-                if hasattr(node, "filterkey") and l.find(node.filterkey) != -1:
+                if hasattr(node, "filterkey") and l.find(node.filterkey.encode('utf-8')) != -1:
                     print("find ... " + node.filterkey)
                     timestamp = l.split()[1]
                     node.time_set(timestamp, timebase)
+                    proc = l.split()[2].split('/')[1]
+                    if proc == node.filterkey:
+                        node.proc_set(proc)
                     break
 
-            self.initrc_parser.parse_service_line(l, timebase, self.nodeList)
-        self.initrc_parser.parse_initrc(self.outputDir)
+            self.service_parser.parse_service_line(l, timebase, self.nodeList)
+        self.service_parser.parse_initrc(self.outputDir)
 
         self.nodeList.sort(key=lambda x:x.seconds)
 
@@ -92,14 +103,19 @@ class bootpgs_parser:
         print("---------------------")
         out.write("---------------------\n")
         for node in self.nodeList:
-            print((node.rank-1)*'\t' + '%-20s,'%(node.name) + (5-node.rank)*'\t' + '%5s'%(str(node.seconds)))
-            out.write((node.rank-1)*'\t' + '%-20s,'%(node.name) + (5-node.rank)*'\t' + '%5s'%(str(node.seconds)) + '\n')
+            if node.seconds == -1.0:
+                continue
+            if hasattr(node, "flag"):
+                print((node.rank-1)*'\t' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) +  '\t%10s'%(node.proc))
+                out.write((node.rank-1)*'\t' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '\t%10s'%(node.proc)  + '\n')
+            else:
+                print((node.rank-1)*'\t' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) +  '\t%10s'%(node.proc))
+                out.write((node.rank-1)*'\t' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '\t%10s'%(node.proc)  + '\n')
         out.close()
-        self.initrc_parser.showResult(self.outputDir + self.resultFile)
+        #self.service_parser.showResult(self.outputDir + self.resultFile)
 
-class initrc_parser:
+class service_parser:
     def __init__(self):
-        self.filter_svc = "Starting service"
         self.svcList = []
         self.initrcList = []
 
@@ -115,25 +131,11 @@ class initrc_parser:
         return product_device
 
     def dump_initrc(self, outputDir):
-        self.initrcList.append('init.rc')
-        self.initrcList.append('init.' + self.get_product_device() + '.rc')
-        self.initrcList.append('init.coredump.rc')
-        self.initrcList.append('init.crashlogd.rc')
-        self.initrcList.append('init.dvc_desc.rc')
-        self.initrcList.append('init.environ.rc')
-        self.initrcList.append('init.kernel.rc')
-        self.initrcList.append('init.log-watch.rc')
-        self.initrcList.append('init.logs.rc')
-        self.initrcList.append('init.npk.rc')
-        self.initrcList.append('init.trace.rc')
-        self.initrcList.append('init.usb.configfs.rc')
-        self.initrcList.append('init.usb.rc')
-        self.initrcList.append('init.zygote32.rc')
-        self.initrcList.append('init.zygote64_32.rc')
-        self.initrcList.append('init.debug-charging.rc')
-        self.initrcList.append('init.diag.rc')
-        self.initrcList.append('init.lmdump.rc')
-        self.initrcList.append('init.telephony-config.rc')
+        with open('coldboot_progress.json', 'r') as f:
+            data = json.load(f)
+        for i in data["coldboot"]["initrc"]:
+            self.initrcList.append(i["file"])
+        self.initrcList.append('init.'+self.get_product_device()+'.rc')
        
         for i in self.initrcList:
             os.system('adb pull  ' + i + ' ./' + outputDir)
@@ -160,24 +162,36 @@ class initrc_parser:
                             #print("... calling phase_set(" + on_phase + ")")
 
     def parse_service_line(self, line, timebase, stageList):
-        if line.find(self.filter_svc) != -1:
-            timestamp = line.split()[1]
-            svc_name = line.split(self.filter_svc)[1].split('\'...')[0].lstrip(' \'')
-            svcnode = svc_node("service "+svc_name)
-            svcnode.time_set(timestamp, timebase)
-            self.svcList.append(svcnode)
-            stageList.append(svcnode)
+        flag = 'X'
+        svc_name = ''
+        if line.find(': Starting service ') != -1:
+            flag = 'N'
+            svc_name = line.split('service ')[1].split('\'...')[0].strip().strip('\'')
+            #print("<---- N: svc_name: " + svc_name)
+        elif line.find(': Starting ') != -1:
+            flag = 'A'
+            svc_name = line.split('Starting ')[1].split('...')[0].strip()
+        elif line.find(': Start proc ') != -1:
+            flag = 'P'
+            svc_name = line.split('proc ')[1].split(' for')[0]
+        else:
+            return
+        timestamp = line.split()[1]
+        proc = line.split()[2].split('/')[1].rstrip('(')
+        svcnode = svc_node(svc_name, proc, flag)
+        svcnode.time_set(timestamp, timebase)
+        self.svcList.append(svcnode)
+        stageList.append(svcnode)
 
     def showResult(self, resultFile):
-        out = open(resultFile,'a')
+        out = open(resultFile, 'a')
         print("\n... show service_start result ...")
         out.write("\n... show service_start result ...\n")
         print("-------------------")
         out.write("-------------------\n")
         for node in self.svcList:
-            # print(node.name + ",\t" + node.phase + ",\t" + str(node.seconds))
-            print('%-30s,'%(node.name) + 3*'\t' + '%5s,'%(str(node.seconds)) + 2*'\t' + '%10s'%(node.phase))
-            out.write('%-30s,'%(node.name) + 3*'\t' + '%5s,'%(str(node.seconds)) + 2*'\t' + '%10s'%(node.phase) + '\n')
+            print('%-10s,'%(node.name) + 3*'\t' + '%5s,'%(str(node.seconds)) + 2*'\t' + '%10s,'%(node.proc)  + '%10s'%(node.phase))
+            out.write('%-10s,'%(node.name) + 3*'\t' + '%5s,'%(str(node.seconds)) + 2*'\t' + '%10s,'%(node.proc)  + '%10s'%(node.phase) + '\n')
         out.close()
 
 if __name__ == '__main__':

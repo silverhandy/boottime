@@ -1,6 +1,8 @@
-{"stage": [
-{"name": "init_start", "filter": "init started", "rank": 1},
-{"name": "zygote_start", "filter": "START com.android.internal.os.ZygoteInit", "rank": 1},
+{"coldboot": {
+"stage": [
+{"name": "init_1_start", "filter": "init first stage started", "rank": 1},
+{"name": "init_2_start", "filter": "init second stage started", "rank": 1},
+{"name": "android_start", "filter": "boot_progress_start", "rank": 1},
 {"name": "preload_start", "filter": "boot_progress_preload_start", "rank": 1},
 {"name": "preload_end", "filter": "boot_progress_preload_end", "rank": 1},
 {"name": "system_run", "filter": "boot_progress_system_run", "rank": 1},
@@ -11,7 +13,8 @@
 {"name": "ams_ready", "filter": "boot_progress_ams_ready", "rank": 1},
 {"name": "enable_screen", "filter": "boot_progress_enable_screen", "rank": 1},
 {"name": "bootanim_exit", "filter": "Service 'bootanim'", "rank": 1},
-{"name": "initializing_selinux", "filter": "Initializing SELinux enforcing took", "rank": 2},
+{"name": "zygote_launched", "filter": "START com.android.internal.os.ZygoteInit", "rank": 2},
+{"name": "init_selinux", "filter": "Initializing SELinux", "rank": 2},
 {"name": ".coldboot_done", "filter": "Waiting for /dev/.coldboot_done took", "rank": 2},
 {"name": "load_default_prop", "filter": "Loading properties from /default.prop took", "rank": 2},
 {"name": "load_system_prop", "filter": "Loading properties from /system/build.prop took", "rank": 2},
@@ -20,5 +23,29 @@
 {"name": "load_data_local_prop", "filter": "Loading properties from /data/local.prop took", "rank": 2},
 {"name": "cache_mount", "filter": "check_fs(): unmount(/cache)", "rank": 2},
 {"name": "config_mount", "filter": "check_fs(): unmount(/config)", "rank": 2},
-{"name": "data_mount", "filter": "check_fs(): unmount(/data)", "rank": 2}
-]}
+{"name": "data_mount", "filter": "check_fs(): unmount(/data)", "rank": 2},
+{"name": "display_launcher", "filter": "Displayed com.google.android.googlequicksearchbox", "rank": 2},
+{"name": "boot_is_finished", "filter": "Boot is finished", "rank": 2}
+],
+
+"initrc": [
+{"file": "init.rc"},
+{"file": "init.coredump.rc"},
+{"file": "init.crashlogd.rc"},
+{"file": "init.dvc_desc.rc"},
+{"file": "init.environ.rc"},
+{"file": "init.kernel.rc"},
+{"file": "init.log-watch.rc"},
+{"file": "init.logs.rc"},
+{"file": "init.npk.rc"},
+{"file": "init.trace.rc"},
+{"file": "init.usb.configfs.rc"},
+{"file": "init.usb.rc"},
+{"file": "init.zygote32.rc"},
+{"file": "init.zygote64_32.rc"},
+{"file": "init.debug-charging.rc"},
+{"file": "init.diag.rc"},
+{"file": "init.lmdump.rc"},
+{"file": "init.telephony-config.rc"}
+]
+}}
