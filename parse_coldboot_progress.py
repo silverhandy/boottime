@@ -97,6 +97,8 @@ class bootpgs_parser:
         self.nodeList.sort(key=lambda x:x.seconds)
 
     def showResult(self):
+        delta = 0.0
+        last_sec = 0.0
         out = open(self.outputDir + self.resultFile,'a')
         print("\n... show boot_progress result ...")
         out.write("\n... show boot_progress result ...\n")
@@ -105,12 +107,14 @@ class bootpgs_parser:
         for node in self.nodeList:
             if node.seconds == -1.0:
                 continue
+            delta = node.seconds - last_sec
             if hasattr(node, "flag"):
-                print((node.rank-1)*'\t' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) +  '\t%10s'%(node.proc))
-                out.write((node.rank-1)*'\t' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '\t%10s'%(node.proc)  + '\n')
+                print((node.rank-1)*'\t' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
+                out.write((node.rank-1)*'\t' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
             else:
-                print((node.rank-1)*'\t' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) +  '\t%10s'%(node.proc))
-                out.write((node.rank-1)*'\t' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '\t%10s'%(node.proc)  + '\n')
+                print((node.rank-1)*'\t' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
+                out.write((node.rank-1)*'\t' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
+            last_sec = node.seconds
         out.close()
         #self.service_parser.showResult(self.outputDir + self.resultFile)
 
