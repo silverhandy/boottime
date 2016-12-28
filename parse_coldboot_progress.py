@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, sys, time, string, commands, json
+import os, sys, time, string, commands, json, re
 
 class p_node:
     def __init__(self, name):
@@ -98,7 +98,6 @@ class bootpgs_parser:
 
     def showResult(self):
         delta = 0.0
-        last_sec = 0.0
         out = open(self.outputDir + self.resultFile,'a')
         print("\n<=========== show boot_progress result")
         out.write("\n<========== show boot_progress result\n")
@@ -107,14 +106,14 @@ class bootpgs_parser:
         for node in self.nodeList:
             if node.seconds == -1.0:
                 continue
-            delta = node.seconds - last_sec
+            delta = self.nodeList[(self.nodeList.index(node)+1)%len(self.nodeList)].seconds - node.seconds
+            if delta < 0: delta = 0
             if hasattr(node, "flag"):
                 print((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
                 out.write((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
             else:
                 print((node.rank-1)*'\t,' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
                 out.write((node.rank-1)*'\t,' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
-            last_sec = node.seconds
         out.close()
         #self.service_parser.showResult(self.outputDir + self.resultFile)
 
@@ -180,6 +179,8 @@ class service_parser:
             svc_name = line.split('proc ')[1].split(' for')[0]
         else:
             return
+
+        svc_name = svc_name.replace(',', '')
         timestamp = line.split()[1]
         proc = line.split()[2].split('/')[1].rstrip('(')
         svcnode = svc_node(svc_name, proc, flag)

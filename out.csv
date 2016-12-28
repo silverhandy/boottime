@@ -1,206 +1,209 @@
 
 <========== show boot_progress result
 name,,, seconds, delta, proc
-	,[A] Kernel              ,	,  0.0,  0.0,          
-	,[A] in permissive mode  ,	,0.009,0.009,   SELinux
-init_1_start        ,	,	,0.643,0.634,          
-	,init_selinux        ,	,0.672,0.029,          
-init_2_start        ,	,	,0.676,0.004,          
-	,load_default_prop   ,	,0.745,0.069,          
-	,[N] ueventd             ,	,0.747,0.002,      init
-	,[N] rvc                 ,	,0.908,0.161,      init
-	,.coldboot_done      ,	,0.909,0.001,          
-	,cache_mount         ,	,0.952,0.043,          
-	,config_mount        ,	,1.056,0.104,          
-	,[N] logd                ,	,1.078,0.022,      init
-	,load_system_prop    ,	,1.094,0.016,          
-	,load_vendor_prop    ,	,1.097,0.003,          
-	,load_factory_prop   ,	,1.097,  0.0,          
-	,[N] vold                ,	,1.099,0.002,      init
-	,[N] exec 0 (/system/bin/tzdatacheck),	,1.107,0.008,      init
-	,[N] logd-reinit         ,	,1.118,0.011,      init
-	,[N] healthd             ,	, 1.12,0.002,      init
-	,[N] lmkd                ,	, 1.12,  0.0,      init
-	,[N] servicemanager      ,	,1.121,0.001,      init
-	,[N] surfaceflinger      ,	,1.121,  0.0,      init
-	,[N] reset_usb           ,	,1.121,  0.0,      init
-	,[N] watchdogd           ,	,1.121,  0.0,      init
-	,[N] intel_prop          ,	,1.125,0.004,      init
-	,[N] earlylogs           ,	,1.125,  0.0,      init
-	,[N] dvc_desc            ,	,1.126,0.001,      init
-	,[N] bootanim            ,	,3.082,1.956,      init
-	,[N] rfkill-init         ,	,3.142, 0.06,      init
-	,[N] ioc_slcand          ,	,3.614,0.472,      init
-	,[N] console             ,	,3.614,  0.0,      init
-	,[N] gfxd                ,	,3.615,0.001,      init
-	,[N] defaultcrypto       ,	,3.616,0.001,      init
-	,[N] adbd                ,	, 3.62,0.004,      init
-	,data_mount          ,	,4.215,0.595,          
-	,load_data_local_prop,	, 4.24,0.025,          
-	,[N] logd-reinit         ,	, 4.29, 0.05,      init
-	,[N] ap_log_srv          ,	,4.298,0.008,      init
-	,[A] Wifi FW crash thread,	,4.315,0.017, log-watch
-	,[A] lowmemorykiller thread,	,4.315,  0.0, log-watch
-	,[A] page allocation failure thread,	,4.315,  0.0, log-watch
-	,[A] sst timed-out thread,	,4.316,0.000999999999999, log-watch
-	,[A] GPU HANG thread     ,	,4.324,0.008, log-watch
-	,[A] SysRq HELP thread   ,	,4.324,  0.0, log-watch
-	,[N] exec 1 (/system/bin/tzdatacheck),	,4.325,0.001,      init
-	,[A] healthd battery thread,	,4.325,  0.0, log-watch
-	,[A] mei_txe failed thread,	,4.326,0.000999999999999, log-watch
-	,[A] Cold boot timeout thread,	,4.329,0.003, log-watch
-	,[A] DM-verity Corrupted thread,	,4.329,  0.0, log-watch
-	,[N] apk_logfs           ,	, 4.33,0.001,      init
-	,[N] netd                ,	,4.341,0.011,      init
-	,[N] debuggerd           ,	,4.342,0.000999999999999,      init
-	,[N] debuggerd64         ,	,4.342,  0.0,      init
-	,[N] drm                 ,	,4.343,0.001,      init
-	,[N] media               ,	,4.343,  0.0,      init
-	,[N] installd            ,	,4.343,  0.0,      init
-	,[N] flash_recovery      ,	,4.344,0.001,      init
-	,[N] keystore            ,	,4.344,  0.0,      init
-	,[N] msync               ,	,4.345,0.000999999999999,      init
-	,[N] coreu               ,	,4.345,  0.0,      init
-	,[N] esif_ufd            ,	,4.345,  0.0,      init
-	,[N] hdcpd               ,	,4.346,0.001,      init
-	,[N] ufipc_daemon_app    ,	,4.346,  0.0,      init
-	,[N] gptp                ,	,4.346,  0.0,      init
-	,[N] zygote              ,	,4.347,0.001,      init
-	,[N] zygote_secondary    ,	,4.347,  0.0,      init
-	,[N] gatekeeperd         ,	,4.348,0.000999999999999,      init
-	,[N] perfprofd           ,	,4.359,0.011,      init
-	,[N] dirana_config       ,	,4.359,  0.0,      init
-	,[N] pstore-clean        ,	, 4.36,0.001,      init
-	,[N] init_npk            ,	, 4.36,  0.0,      init
-	,[N] crashlogd           ,	, 4.36,  0.0,      init
-	,[N] log-watch           ,	,4.361,0.000999999999999,      init
-	,[N] power_hal_helper    ,	,4.364,0.003,      init
-android_start       ,	,	,5.142,0.778,          
-	,zygote_launched     ,	,5.142,  0.0,          
-preload_start       ,	,	, 5.71,0.568,          
-	,[A] a blocking GC Explicit,	,6.576,0.866,       art
-	,[A] a blocking GC Explicit,	,6.586, 0.01,       art
-	,[A] a blocking GC HeapTrim,	,6.591,0.005,       art
-	,[A] a blocking GC Background,	,6.592,0.000999999999999,       art
-preload_end         ,	,	,6.663,0.071,          
-	,[A] a blocking GC Explicit,	,6.663,  0.0,       art
-	,[A] a blocking GC Explicit,	,6.674,0.011,       art
-system_run          ,	,	, 6.74,0.066,          
-	,[A] com.android.server.pm.Installer,	,6.787,0.047,SystemServiceManager
-	,[A] com.android.server.am.ActivityManagerService$Lifecycle,	,6.792,0.005,SystemServiceManager
-	,[A] com.android.server.power.PowerManagerService,	, 6.89,0.098,SystemServiceManager
-	,[A] com.android.server.lights.LightsService,	,6.904,0.014,SystemServiceManager
-	,[A] com.android.server.display.DisplayManagerService,	,6.909,0.005,SystemServiceManager
-	,[A] phase 100           ,	,6.915,0.006,SystemServiceManager
-pms_system_scan_start,	,	,7.064,0.149,          
-pms_data_scan_start ,	,	,9.388,2.324,          
-pms_scan_end        ,	,	,9.743,0.355,          
-pms_ready           ,	,	,9.817,0.074,          
-	,[A] a blocking GC Explicit,	,9.823,0.006,       art
-	,[A] com.android.server.BatteryService,	,9.854,0.031,SystemServiceManager
-	,[A] com.android.server.usage.UsageStatsService,	,9.859,0.005,SystemServiceManager
-	,[A] com.android.server.webkit.WebViewUpdateService,	,9.867,0.008,SystemServiceManager
-	,[A] com.android.server.telecom.TelecomLoaderService,	,9.872,0.005,SystemServiceManager
-	,[A] com.android.server.camera.CameraService,	,9.897,0.025,SystemServiceManager
-	,[A] com.android.server.AlarmManagerService,	,9.931,0.034,SystemServiceManager
-	,[A] input manager       ,	,10.01,0.079,InputManager
-	,[A] com.android.server.BluetoothService,	,10.011,0.000999999999999,SystemServiceManager
-	,[A] com.android.server.MountService$Lifecycle,	,10.092,0.081,SystemServiceManager
-	,[A] com.android.server.UiModeManagerService,	,10.098,0.006,SystemServiceManager
-	,[A] com.android.server.PersistentDataBlockService,	,10.11,0.012,SystemServiceManager
-	,[A] com.android.server.DeviceIdleController,	,10.132,0.022,SystemServiceManager
-	,[A] com.android.server.devicepolicy.DevicePolicyManagerService$Lifecycle,	,10.19,0.058,SystemServiceManager
-	,[A] com.android.server.wifi.p2p.WifiP2pService,	,10.233,0.043,SystemServiceManager
-	,[A] com.android.server.wifi.WifiService,	,10.262,0.029,SystemServiceManager
-	,[A] com.android.server.wifi.WifiScanningService,	,10.345,0.083,SystemServiceManager
-	,[A] wifiscanner         ,	,10.346,0.000999999999999,WifiScanningService
-	,[A] com.android.server.wifi.RttService,	,10.347,0.000999999999999,SystemServiceManager
-	,[A] rttmanager          ,	,10.347,  0.0,RttService
-	,[A] com.android.server.ethernet.EthernetService,	,10.348,0.001,SystemServiceManager
-	,[A] com.android.server.notification.NotificationManagerService,	,10.372,0.024,SystemServiceManager
-	,[A] com.android.server.storage.DeviceStorageMonitorService,	,10.392, 0.02,SystemServiceManager
-	,[A] com.android.server.DockObserver,	,10.44,0.048,SystemServiceManager
-	,[A] com.android.server.midi.MidiService$Lifecycle,	,10.442,0.002,SystemServiceManager
-	,[A] com.android.server.usb.UsbService$Lifecycle,	,10.446,0.004,SystemServiceManager
-	,[A] com.android.server.twilight.TwilightService,	,10.458,0.012,SystemServiceManager
-	,[A] com.android.server.job.JobSchedulerService,	,10.459,0.000999999999999,SystemServiceManager
-	,[A] com.android.server.backup.BackupManagerService$Lifecycle,	,10.464,0.005,SystemServiceManager
-	,[A] com.android.server.appwidget.AppWidgetService,	,10.465,0.000999999999999,SystemServiceManager
-	,[A] com.android.server.voiceinteraction.VoiceInteractionManagerService,	,10.468,0.003,SystemServiceManager
-	,[A] com.android.server.GestureLauncherService,	,10.472,0.004,SystemServiceManager
-	,[A] com.android.server.dreams.DreamManagerService,	,10.482, 0.01,SystemServiceManager
-	,[A] com.android.server.print.PrintManagerService,	,10.487,0.005,SystemServiceManager
-	,[A] com.android.server.restrictions.RestrictionsManagerService,	,10.491,0.004,SystemServiceManager
-	,[A] com.android.server.media.MediaSessionService,	,10.492,0.001,SystemServiceManager
-	,[A] com.android.server.trust.TrustManagerService,	,10.496,0.004,SystemServiceManager
-	,[A] com.android.server.fingerprint.FingerprintService,	,10.498,0.002,SystemServiceManager
-	,[A] com.android.server.pm.LauncherAppsService,	,10.503,0.005,SystemServiceManager
-	,[A] com.android.server.media.projection.MediaProjectionManagerService,	,10.504,0.000999999999999,SystemServiceManager
-	,[A] com.android.server.MmsServiceBroker,	,10.513,0.009,SystemServiceManager
-	,[A] phase 480           ,	,10.534,0.021,SystemServiceManager
-	,[A] phase 500           ,	,10.542,0.008,SystemServiceManager
-	,[A] Ethernet service    ,	,10.562, 0.02,EthernetServiceImpl
-	,[A] with transport com.google.android.backup/.BackupTransportService,	,11.109,0.547,BackupManagerService
-ams_ready           ,	,	,11.141,0.032,          
-	,[A] phase 550           ,	,11.143,0.002,SystemServiceManager
-	,[N] p2p_supplicant      ,	,11.157,0.014,      init
-	,[A] a blocking GC HeapTrim,	,11.177, 0.02,       art
-	,[P] 2661:android.process.media/u0a5,	,11.187, 0.01,ActivityManager
-	,[A] a blocking GC HeapTrim,	,11.199,0.012,       art
-	,[A] a blocking GC Background,	,11.202,0.003,       art
-	,[P] 2675:WebViewLoader-x86/1037 [android.webkit.WebViewFactory$RelroFileCreator],	,11.231,0.029,ActivityManager
-	,[P] 2680:WebViewLoader-x86_64/1037 [android.webkit.WebViewFactory$RelroFileCreator],	,11.242,0.011,ActivityManager
-	,[P] 2685:com.android.systemui/u0a19,	,11.253,0.011,ActivityManager
-	,[P] 2702:com.android.externalstorage/u0a6,	,11.268,0.015,ActivityManager
-	,[A] AP scan for wildcard SSID,	,11.296,0.028,wpa_supplicant
-	,[A] radio work 'scan'@0x7ff427bdc140 after 0.000019 second wait,	,11.296,  0.0,wpa_supplicant
-	,[A] SystemUI services.  ,	,11.363,0.067,SystemUIService
-	,[A] phase 600           ,	,11.957,0.594,SystemServiceManager
-	,[A] a blocking GC HeapTrim,	,11.964,0.007,       art
-	,[P] 3021:com.google.android.googlequicksearchbox:interactor/u0a20,	,11.974, 0.01,ActivityManager
-	,[P] 3036:com.google.android.inputmethod.latin/u0a51,	,11.997,0.023,ActivityManager
-	,[P] 3056:com.google.android.gms.persistent/u0a7,	,12.013,0.016,ActivityManager
-	,[P] 3098:com.android.phone/1001,	,12.059,0.046,ActivityManager
-	,[P] 3106:com.intel.dptf/1000,	,12.069, 0.01,ActivityManager
-	,[P] 3123:com.google.android.googlequicksearchbox/u0a20,	,12.084,0.015,ActivityManager
-	,[P] 3149:com.android.printspooler/u0a63,	,12.172,0.088,ActivityManager
-	,[P] 3167:android.process.acore/u0a3,	,12.203,0.031,ActivityManager
-	,[P] 3210:com.google.android.googlequicksearchbox:search/u0a20,	,12.36,0.157,ActivityManager
-	,[P] 3247:com.android.smspush/u0a65,	,12.524,0.164,ActivityManager
-	,[P] 3275:com.google.process.gapps/u0a7,	,12.628,0.104,ActivityManager
-	,[P] 3330:com.google.android.partnersetup/u0a11,	,13.007,0.379,ActivityManager
-	,[P] 3352:com.google.android.gms/u0a7,	,13.232,0.225,ActivityManager
-	,display_launcher    ,	,13.271,0.039,          
-enable_screen       ,	,	,13.324,0.053,          
-	,boot_is_finished    ,	,13.522,0.198,          
-	,[A] service, intent=Intent { act=com.google.android.location.reporting.ACTION_UPDATE_WORLD cmp=com.google.android.gms/com.google.android.location.reporting.service.DispatchingService (has extras) }, extras=Bundle[{receiverAction=android.location.PROVIDERS_CHANGED}],	,13.648,0.126,  GCoreUlr
-	,[P] 3397:com.google.android.apps.maps/u0a54,	,13.666,0.018,ActivityManager
-bootanim_exit       ,	,	,13.669,0.003,          
-	,[A] phase 1000          ,	,13.735,0.066,SystemServiceManager
-	,[P] 3418:com.android.bluetooth/1002,	,13.747,0.012,ActivityManager
-	,[N] avbstreamhandler    ,	,13.842,0.095,      init
-	,[A] hardware config     ,	,13.975,0.133, bt_vendor
-	,[N] btcfg               ,	,14.07,0.095,      init
-	,[P] 3531:com.android.settings/1000,	,14.697,0.627,ActivityManager
-	,[P] 3591:com.android.keychain/1000,	,15.103,0.406,ActivityManager
-	,[P] 3598:com.facebook.katana/u0a77,	,15.118,0.015,ActivityManager
-	,[P] 3620:com.google.android.marvin.talkback/u0a70,	,15.343,0.225,ActivityManager
-	,[P] 3634:com.android.providers.calendar/u0a1,	,15.435,0.092,ActivityManager
-	,[P] 3650:com.google.android.configupdater/u0a2,	,15.535,  0.1,ActivityManager
-	,[A] service, intent=Intent { act=com.google.android.location.reporting.ACTION_UPDATE_WORLD cmp=com.google.android.gms/com.google.android.location.reporting.service.DispatchingService (has extras) }, extras=Bundle[{receiverAction=android.intent.action.BOOT_COMPLETED}],	,15.743,0.208,  GCoreUlr
-	,[P] 3729:com.google.android.onetimeinitializer/u0a9,	,16.064,0.321,ActivityManager
-	,[P] 3749:com.android.managedprovisioning/u0a12,	,16.131,0.067,ActivityManager
-	,[P] 3769:com.android.vending/u0a14,	,16.312,0.181,ActivityManager
-	,[P] 3808:com.google.android.apps.messaging/u0a27,	,16.618,0.306,ActivityManager
-	,[P] 3838:com.google.android.calendar/u0a29,	,16.862,0.244,ActivityManager
-	,[N] adbd                ,	,16.868,0.006,      init
-	,[A] batch for messages from 16578 to 16839 (message update limit = 80, message scan limit = 4000),	,16.995,0.127,BugleDataModel
-	,[P] 3884:com.google.android.deskclock/u0a35,	,17.129,0.134,ActivityManager
-	,[P] 3912:com.google.android.gm/u0a41,	,17.289, 0.16,ActivityManager
-	,[P] 3940:com.google.android.gm.exchange/u0a38,	,17.565,0.276,ActivityManager
-	,[P] 3956:com.google.process.gapps/u0a43,	,17.589,0.024,ActivityManager
-	,[P] 3975:com.google.android.talk/u0a47,	,17.675,0.086,ActivityManager
-	,[P] 4016:com.google.android.inputmethod.japanese/u0a50,	,18.116,0.441,ActivityManager
-	,[P] 4032:com.google.android.apps.maps/u0a54,	,18.231,0.115,ActivityManager
-	,[P] 4063:com.intel.widi.uibc/1000,	,18.431,  0.2,ActivityManager
-	,[P] 4079:com.google.android.youtube/u0a69,	,18.476,0.045,ActivityManager
+	,[A] Kernel              ,	,  0.0,0.009,          
+	,[A] in permissive mode  ,	,0.009,0.616,   SELinux
+init_1_start        ,	,	,0.625,0.025,          
+	,init_selinux        ,	, 0.65,0.004,          
+init_2_start        ,	,	,0.654,0.071,          
+	,load_default_prop   ,	,0.725,0.003,          
+	,[N] ueventd             ,	,0.728,0.151,      init
+	,.coldboot_done      ,	,0.879,  0.0,          
+	,[N] rvc                 ,	,0.879, 0.05,      init
+	,cache_mount         ,	,0.929,0.106,          
+	,config_mount        ,	,1.035,0.022,          
+	,[N] logd                ,	,1.057,0.011,      init
+	,load_system_prop    ,	,1.068,0.002,          
+	,load_vendor_prop    ,	, 1.07,  0.0,          
+	,load_factory_prop   ,	, 1.07,0.003,          
+	,[N] vold                ,	,1.073,0.008,      init
+	,[N] exec 0 (/system/bin/tzdatacheck),	,1.081,0.017,      init
+	,[N] logd-reinit         ,	,1.098,0.002,      init
+	,[N] healthd             ,	,  1.1,0.001,      init
+	,[N] lmkd                ,	,1.101,  0.0,      init
+	,[N] servicemanager      ,	,1.101,  0.0,      init
+	,[N] surfaceflinger      ,	,1.101,0.001,      init
+	,[N] reset_usb           ,	,1.102,  0.0,      init
+	,[N] watchdogd           ,	,1.102,0.002,      init
+	,[N] intel_prop          ,	,1.104,0.001,      init
+	,[N] earlylogs           ,	,1.105,  0.0,      init
+	,[N] dvc_desc            ,	,1.105,1.959,      init
+	,[N] bootanim            ,	,3.064,0.056,      init
+	,[N] rfkill-init         ,	, 3.12, 0.53,      init
+	,[N] ioc_slcand          ,	, 3.65,  0.0,      init
+	,[N] console             ,	, 3.65,0.001,      init
+	,[N] gfxd                ,	,3.651,  0.0,      init
+	,[N] defaultcrypto       ,	,3.651,0.008,      init
+	,[N] adbd                ,	,3.659,0.595,      init
+	,data_mount          ,	,4.254,0.023,          
+	,load_data_local_prop,	,4.277,0.056,          
+	,[N] logd-reinit         ,	,4.333,0.006,      init
+	,[N] ap_log_srv          ,	,4.339,0.003,      init
+	,[A] Wifi FW crash thread,	,4.342,0.008, log-watch
+	,[A] lowmemorykiller thread,	, 4.35,  0.0, log-watch
+	,[A] page allocation failure thread,	, 4.35,  0.0, log-watch
+	,[A] sst timed-out thread,	, 4.35,0.002, log-watch
+	,[A] GPU HANG thread     ,	,4.352,  0.0, log-watch
+	,[A] SysRq HELP thread   ,	,4.352,0.000999999999999, log-watch
+	,[A] healthd battery thread,	,4.353,0.003, log-watch
+	,[A] mei_txe failed thread,	,4.356,0.001, log-watch
+	,[A] Cold boot timeout thread,	,4.357,  0.0, log-watch
+	,[A] DM-verity Corrupted thread,	,4.357,0.008, log-watch
+	,[N] exec 1 (/system/bin/tzdatacheck),	,4.365,  0.0,      init
+	,[N] apk_logfs           ,	,4.365,0.019,      init
+	,[N] netd                ,	,4.384,  0.0,      init
+	,[N] debuggerd           ,	,4.384,0.000999999999999,      init
+	,[N] debuggerd64         ,	,4.385,  0.0,      init
+	,[N] drm                 ,	,4.385,  0.0,      init
+	,[N] media               ,	,4.385,0.001,      init
+	,[N] installd            ,	,4.386,  0.0,      init
+	,[N] flash_recovery      ,	,4.386,0.000999999999999,      init
+	,[N] keystore            ,	,4.387,  0.0,      init
+	,[N] msync               ,	,4.387,  0.0,      init
+	,[N] coreu               ,	,4.387,0.001,      init
+	,[N] esif_ufd            ,	,4.388,0.001,      init
+	,[N] hdcpd               ,	,4.389,  0.0,      init
+	,[N] ufipc_daemon_app    ,	,4.389,  0.0,      init
+	,[N] gptp                ,	,4.389,0.000999999999999,      init
+	,[N] zygote              ,	, 4.39,  0.0,      init
+	,[N] zygote_secondary    ,	, 4.39,0.001,      init
+	,[N] gatekeeperd         ,	,4.391,0.002,      init
+	,[N] perfprofd           ,	,4.393,0.001,      init
+	,[N] dirana_config       ,	,4.394,  0.0,      init
+	,[N] pstore-clean        ,	,4.394,0.000999999999999,      init
+	,[N] init_npk            ,	,4.395,  0.0,      init
+	,[N] crashlogd           ,	,4.395,0.002,      init
+	,[N] log-watch           ,	,4.397,  0.0,      init
+	,[N] power_hal_helper    ,	,4.397,0.787,      init
+android_start       ,	,	,5.184,  0.0,          
+	,zygote_launched     ,	,5.184,0.631,          
+preload_start       ,	,	,5.815,0.898,          
+	,[A] a blocking GC Explicit,	,6.713,0.006,       art
+	,[A] a blocking GC Explicit,	,6.719,0.005,       art
+	,[A] a blocking GC HeapTrim,	,6.724,0.000999999999999,       art
+	,[A] a blocking GC Background,	,6.725,0.076,       art
+preload_end         ,	,	,6.801,  0.0,          
+	,[A] a blocking GC Explicit,	,6.801, 0.01,       art
+	,[A] a blocking GC Explicit,	,6.811,0.059,       art
+system_run          ,	,	, 6.87,0.048,          
+	,[A] com.android.server.pm.Installer,	,6.918,0.005,SystemServiceManager
+	,[A] com.android.server.am.ActivityManagerService$Lifecycle,	,6.923,0.111,SystemServiceManager
+	,[A] com.android.server.power.PowerManagerService,	,7.034,0.015,SystemServiceManager
+	,[A] com.android.server.lights.LightsService,	,7.049,0.004,SystemServiceManager
+	,[A] com.android.server.display.DisplayManagerService,	,7.053,0.006,SystemServiceManager
+	,[A] phase 100           ,	,7.059,0.145,SystemServiceManager
+pms_system_scan_start,	,	,7.204,2.307,          
+pms_data_scan_start ,	,	,9.511,0.357,          
+pms_scan_end        ,	,	,9.868,0.074,          
+pms_ready           ,	,	,9.942,0.032,          
+	,[A] com.android.server.BatteryService,	,9.974,0.005,SystemServiceManager
+	,[A] com.android.server.usage.UsageStatsService,	,9.979,0.007,SystemServiceManager
+	,[A] com.android.server.webkit.WebViewUpdateService,	,9.986,0.004,SystemServiceManager
+	,[A] com.android.server.telecom.TelecomLoaderService,	, 9.99,0.021,SystemServiceManager
+	,[A] com.android.server.camera.CameraService,	,10.011,0.031,SystemServiceManager
+	,[A] com.android.server.AlarmManagerService,	,10.042,0.088,SystemServiceManager
+	,[A] input manager       ,	,10.13,0.000999999999999,InputManager
+	,[A] com.android.server.BluetoothService,	,10.131, 0.07,SystemServiceManager
+	,[A] com.android.server.MountService$Lifecycle,	,10.201,0.009,SystemServiceManager
+	,[A] com.android.server.UiModeManagerService,	,10.21,0.012,SystemServiceManager
+	,[A] com.android.server.PersistentDataBlockService,	,10.222,0.025,SystemServiceManager
+	,[A] com.android.server.DeviceIdleController,	,10.247,0.067,SystemServiceManager
+	,[A] com.android.server.devicepolicy.DevicePolicyManagerService$Lifecycle,	,10.314,0.043,SystemServiceManager
+	,[A] com.android.server.wifi.p2p.WifiP2pService,	,10.357,0.024,SystemServiceManager
+	,[A] com.android.server.wifi.WifiService,	,10.381,0.078,SystemServiceManager
+	,[A] com.android.server.wifi.WifiScanningService,	,10.459,0.001,SystemServiceManager
+	,[A] com.android.server.wifi.RttService,	,10.46,0.000999999999999,SystemServiceManager
+	,[A] com.android.server.ethernet.EthernetService,	,10.461,0.027,SystemServiceManager
+	,[A] com.android.server.notification.NotificationManagerService,	,10.488,0.018,SystemServiceManager
+	,[A] com.android.server.storage.DeviceStorageMonitorService,	,10.506,0.042,SystemServiceManager
+	,[A] com.android.server.DockObserver,	,10.548,0.003,SystemServiceManager
+	,[A] com.android.server.midi.MidiService$Lifecycle,	,10.551,0.005,SystemServiceManager
+	,[A] com.android.server.usb.UsbService$Lifecycle,	,10.556,0.011,SystemServiceManager
+	,[A] com.android.server.twilight.TwilightService,	,10.567,0.002,SystemServiceManager
+	,[A] com.android.server.job.JobSchedulerService,	,10.569,0.004,SystemServiceManager
+	,[A] com.android.server.backup.BackupManagerService$Lifecycle,	,10.573,0.000999999999999,SystemServiceManager
+	,[A] com.android.server.appwidget.AppWidgetService,	,10.574,0.003,SystemServiceManager
+	,[A] com.android.server.voiceinteraction.VoiceInteractionManagerService,	,10.577,0.007,SystemServiceManager
+	,[A] com.android.server.GestureLauncherService,	,10.584,0.012,SystemServiceManager
+	,[A] com.android.server.dreams.DreamManagerService,	,10.596,0.006,SystemServiceManager
+	,[A] com.android.server.print.PrintManagerService,	,10.602,0.004,SystemServiceManager
+	,[A] com.android.server.restrictions.RestrictionsManagerService,	,10.606,0.000999999999999,SystemServiceManager
+	,[A] com.android.server.media.MediaSessionService,	,10.607,0.004,SystemServiceManager
+	,[A] com.android.server.trust.TrustManagerService,	,10.611,0.003,SystemServiceManager
+	,[A] com.android.server.fingerprint.FingerprintService,	,10.614,0.006,SystemServiceManager
+	,[A] com.android.server.pm.LauncherAppsService,	,10.62,0.003,SystemServiceManager
+	,[A] com.android.server.media.projection.MediaProjectionManagerService,	,10.623,0.008,SystemServiceManager
+	,[A] com.android.server.MmsServiceBroker,	,10.631,0.022,SystemServiceManager
+	,[A] phase 480           ,	,10.653,0.009,SystemServiceManager
+	,[A] phase 500           ,	,10.662,0.356,SystemServiceManager
+	,[A] with transport com.google.android.backup/.BackupTransportService,	,11.018,0.025,BackupManagerService
+ams_ready           ,	,	,11.043,0.001,          
+	,[A] phase 550           ,	,11.044,0.048,SystemServiceManager
+	,[A] a blocking GC HeapTrim,	,11.092,0.003,       art
+	,[A] a blocking GC Background,	,11.095, 0.03,       art
+	,[P] 2657:WebViewLoader-x86/1037 [android.webkit.WebViewFactory$RelroFileCreator],	,11.125,0.000999999999999,ActivityManager
+	,[A] a blocking GC HeapTrim,	,11.126, 0.01,       art
+	,[P] 2662:WebViewLoader-x86_64/1037 [android.webkit.WebViewFactory$RelroFileCreator],	,11.136,0.011,ActivityManager
+	,[P] 2668:com.android.systemui/u0a19,	,11.147,0.014,ActivityManager
+	,[P] 2688:android.process.media/u0a5,	,11.161,0.012,ActivityManager
+	,[P] 2703:com.android.externalstorage/u0a6,	,11.173,0.082,ActivityManager
+	,[A] SystemUI services.  ,	,11.255, 0.53,SystemUIService
+	,[A] phase 600           ,	,11.785,0.013,SystemServiceManager
+	,[A] a blocking GC HeapTrim,	,11.798,0.006,       art
+	,[N] p2p_supplicant      ,	,11.804,0.004,      init
+	,[P] 2982:com.google.android.googlequicksearchbox:interactor/u0a20,	,11.808,0.019,ActivityManager
+	,[P] 3003:com.google.android.inputmethod.latin/u0a51,	,11.827,0.015,ActivityManager
+	,[P] 3013:com.google.android.gms.persistent/u0a7,	,11.842,0.035,ActivityManager
+	,[P] 3039:com.android.phone/1001,	,11.877,0.011,ActivityManager
+	,[P] 3048:com.intel.dptf/1000,	,11.888,0.019,ActivityManager
+	,[P] 3069:com.google.android.googlequicksearchbox/u0a20,	,11.907,0.015,ActivityManager
+	,[P] 3085:com.android.printspooler/u0a63,	,11.922,0.093,ActivityManager
+	,[P] 3131:android.process.acore/u0a3,	,12.015,0.186,ActivityManager
+	,[P] 3186:com.google.android.googlequicksearchbox:search/u0a20,	,12.201, 0.11,ActivityManager
+	,[P] 3212:com.android.smspush/u0a65,	,12.311,0.149,ActivityManager
+	,[P] 3258:com.google.process.gapps/u0a7,	,12.46,  0.3,ActivityManager
+	,[A] AP scan for wildcard SSID,	,12.76,  0.0,wpa_supplicant
+	,[A] radio work 'scan'@0x7fd84661c140 after 0.000017 second wait,	,12.76,0.104,wpa_supplicant
+	,[P] 3316:com.google.android.partnersetup/u0a11,	,12.864,0.259,ActivityManager
+	,[P] 3347:com.google.android.gms/u0a7,	,13.123,0.041,ActivityManager
+	,display_launcher    ,	,13.164,0.047,          
+enable_screen       ,	,	,13.211,0.226,          
+	,boot_is_finished    ,	,13.437,0.056,          
+	,[A] service intent=Intent { act=com.google.android.location.reporting.ACTION_UPDATE_WORLD cmp=com.google.android.gms/com.google.android.location.reporting.service.DispatchingService (has extras) } extras=Bundle[{receiverAction=android.location.PROVIDERS_CHANGED}],	,13.493,0.012,  GCoreUlr
+	,[P] 3390:com.google.android.apps.maps/u0a54,	,13.505,0.081,ActivityManager
+bootanim_exit       ,	,	,13.586,0.057,          
+	,[A] phase 1000          ,	,13.643,0.012,SystemServiceManager
+	,[P] 3415:com.android.bluetooth/1002,	,13.655,0.096,ActivityManager
+	,[N] avbstreamhandler    ,	,13.751,0.134,      init
+	,[A] hardware config     ,	,13.885,0.096, bt_vendor
+	,[N] btcfg               ,	,13.981,0.448,      init
+	,[P] 3520:com.android.settings/1000,	,14.429,0.372,ActivityManager
+	,[P] 3584:com.android.keychain/1000,	,14.801,0.015,ActivityManager
+	,[P] 3591:com.facebook.katana/u0a77,	,14.816,0.236,ActivityManager
+	,[P] 3614:com.google.android.marvin.talkback/u0a70,	,15.052,0.091,ActivityManager
+	,[P] 3627:com.android.providers.calendar/u0a1,	,15.143,0.083,ActivityManager
+	,[P] 3643:com.google.android.configupdater/u0a2,	,15.226, 0.22,ActivityManager
+	,[A] service intent=Intent { act=com.google.android.location.reporting.ACTION_UPDATE_WORLD cmp=com.google.android.gms/com.google.android.location.reporting.service.DispatchingService (has extras) } extras=Bundle[{receiverAction=android.intent.action.BOOT_COMPLETED}],	,15.446,0.353,  GCoreUlr
+	,[P] 3722:com.google.android.onetimeinitializer/u0a9,	,15.799,0.064,ActivityManager
+	,[P] 3743:com.android.managedprovisioning/u0a12,	,15.863,0.185,ActivityManager
+	,[P] 3761:com.android.vending/u0a14,	,16.048,0.306,ActivityManager
+	,[P] 3799:com.google.android.apps.messaging/u0a27,	,16.354,0.268,ActivityManager
+	,[P] 3821:com.google.android.calendar/u0a29,	,16.622,0.103,ActivityManager
+	,[A] batch for messages from 16555 to 16600 (message update limit = 80 message scan limit = 4000),	,16.725,0.167,BugleDataModel
+	,[P] 3862:com.google.android.deskclock/u0a35,	,16.892,0.153,ActivityManager
+	,[P] 3887:com.google.android.gm/u0a41,	,17.045,0.281,ActivityManager
+	,[P] 3917:com.google.android.gm.exchange/u0a38,	,17.326,0.028,ActivityManager
+	,[P] 3935:com.google.process.gapps/u0a43,	,17.354,0.086,ActivityManager
+	,[P] 3953:com.google.android.talk/u0a47,	,17.44,0.437,ActivityManager
+	,[P] 3993:com.google.android.inputmethod.japanese/u0a50,	,17.877,0.113,ActivityManager
+	,[P] 4009:com.google.android.apps.maps/u0a54,	,17.99,0.201,ActivityManager
+	,[P] 4040:com.intel.widi.uibc/1000,	,18.191,0.041,ActivityManager
+	,[P] 4054:com.google.android.youtube/u0a69,	,18.232,0.699,ActivityManager
+	,[P] 4126:com.intel.crashreport/1000,	,18.931,0.171,ActivityManager
+	,[P] 4151:com.intel.afotaapp/u0a72,	,19.102,0.095,ActivityManager
+	,[P] 4169:com.google.android.music:main/u0a55,	,19.197, 0.51,ActivityManager
+	,[P] 4192:com.android.settings/1000,	,19.707,5.844,ActivityManager
+	,[P] 4289:com.google.android.googlequicksearchbox:search/u0a20,	,25.551,0.164,ActivityManager
+	,[P] 4309:android.process.acore/u0a3,	,25.715,0.087,ActivityManager
+	,[P] 4326:com.android.vending/u0a14,	,25.802, 14.2,ActivityManager
+	,[N] adbd                ,	,40.002,    0,      init
