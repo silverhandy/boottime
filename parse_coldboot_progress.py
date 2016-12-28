@@ -44,7 +44,7 @@ class bootpgs_parser:
         self.outputDir = ""
         self.dmesgFile = "dmesg.log"
         self.logcatFile = "logcat.log"
-        self.resultFile = "out.result"
+        self.resultFile = "out.csv"
         self.service_parser = service_parser()
 
     def initStages(self):
@@ -100,20 +100,20 @@ class bootpgs_parser:
         delta = 0.0
         last_sec = 0.0
         out = open(self.outputDir + self.resultFile,'a')
-        print("\n... show boot_progress result ...")
-        out.write("\n... show boot_progress result ...\n")
-        print("---------------------")
-        out.write("---------------------\n")
+        print("\n<=========== show boot_progress result")
+        out.write("\n<========== show boot_progress result\n")
+        print('name,,, seconds, delta, proc')
+        out.write('name,,, seconds, delta, proc' + '\n')
         for node in self.nodeList:
             if node.seconds == -1.0:
                 continue
             delta = node.seconds - last_sec
             if hasattr(node, "flag"):
-                print((node.rank-1)*'\t' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
-                out.write((node.rank-1)*'\t' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
+                print((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
+                out.write((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
             else:
-                print((node.rank-1)*'\t' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
-                out.write((node.rank-1)*'\t' + '%-20s,'%(node.name) + (4-node.rank)*'\t' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
+                print((node.rank-1)*'\t,' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
+                out.write((node.rank-1)*'\t,' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
             last_sec = node.seconds
         out.close()
         #self.service_parser.showResult(self.outputDir + self.resultFile)
