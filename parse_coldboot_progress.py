@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, sys, time, string, commands, json, re
+import os, sys, time, string, commands, json, re, getopt
 
 class p_node:
     def __init__(self, name):
@@ -36,6 +36,7 @@ class svc_node(p_node):
         self.flag = flag
 
     def phase_set(self, phase):
+        phase = phase.replace(',', '-')
         self.phase = phase
 
 class bootpgs_parser:
@@ -44,7 +45,7 @@ class bootpgs_parser:
         self.outputDir = ""
         self.dmesgFile = "dmesg.log"
         self.logcatFile = "logcat.log"
-        self.resultFile = "out.csv"
+        self.resultFile = "bootprogress.csv"
         self.service_parser = service_parser()
 
     def initStages(self):
@@ -72,10 +73,14 @@ class bootpgs_parser:
         print("... Get init.*.rc ...")
         self.service_parser.dump_initrc(self.outputDir)
         
-    def parseLogs(self):
+    def parseLogs(self, logs):
         timebase = ''
         print("... Parse logcat log ...")
-        with open(self.outputDir+self.logcatFile) as f:
+        if logs is not None:
+            logcatFile = logs
+        else:
+            logcatFile = self.outputDir + self.logcatFile
+        with open(logcatFile) as f:
             lines = f.readlines()
         for l in lines:
             if l.find('Linux version') != -1:
@@ -83,39 +88,45 @@ class bootpgs_parser:
                 continue
             for node in self.nodeList:
                 if hasattr(node, "filterkey") and l.find(node.filterkey.encode('utf-8')) != -1:
-                    print("find ... " + node.filterkey)
+                    # print("find ... " + node.filterkey)
                     timestamp = l.split()[1]
                     node.time_set(timestamp, timebase)
                     proc = l.split()[2].split('/')[1]
                     if proc == node.filterkey:
                         node.proc_set(proc)
                     break
-
+            
             self.service_parser.parse_service_line(l, timebase, self.nodeList)
-        self.service_parser.parse_initrc(self.outputDir)
+        
+        if logs is None:
+            self.service_parser.parse_initrc(self.outputDir)
 
         self.nodeList.sort(key=lambda x:x.seconds)
 
-    def showResult(self):
+    def showResult(self, logs):
         delta = 0.0
-        out = open(self.outputDir + self.resultFile,'a')
+        if logs is not None:
+            outputFile = self.resultFile
+        else:
+            outputFile = self.outputDir + self.resultFile
+        out = open(outputFile, 'w')
         print("\n<=========== show boot_progress result")
         out.write("\n<========== show boot_progress result\n")
-        print('name,,, seconds, delta, proc')
-        out.write('name,,, seconds, delta, proc' + '\n')
+        print('name_1, name_2, name_3, seconds, delta, proc, phase')
+        out.write('name_1, name_2, name_3, seconds, delta, proc, phase' + '\n')
         for node in self.nodeList:
             if node.seconds == -1.0:
                 continue
             delta = self.nodeList[(self.nodeList.index(node)+1)%len(self.nodeList)].seconds - node.seconds
             if delta < 0: delta = 0
             if hasattr(node, "flag"):
-                print((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
-                out.write((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
+                print((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s,'%(node.proc) + '%10s'%(node.phase))
+                out.write((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s,'%(node.proc) + '%10s'%(node.phase) + '\n')
             else:
                 print((node.rank-1)*'\t,' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
                 out.write((node.rank-1)*'\t,' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
+
         out.close()
-        #self.service_parser.showResult(self.outputDir + self.resultFile)
 
 class service_parser:
     def __init__(self):
@@ -188,25 +199,31 @@ class service_parser:
         self.svcList.append(svcnode)
         stageList.append(svcnode)
 
-    def showResult(self, resultFile):
-        out = open(resultFile, 'a')
-        print("\n... show service_start result ...")
-        out.write("\n... show service_start result ...\n")
-        print("-------------------")
-        out.write("-------------------\n")
-        for node in self.svcList:
-            print('%-10s,'%(node.name) + 3*'\t' + '%5s,'%(str(node.seconds)) + 2*'\t' + '%10s,'%(node.proc)  + '%10s'%(node.phase))
-            out.write('%-10s,'%(node.name) + 3*'\t' + '%5s,'%(str(node.seconds)) + 2*'\t' + '%10s,'%(node.proc)  + '%10s'%(node.phase) + '\n')
-        out.close()
-
-if __name__ == '__main__':
+def parse_coldboot_progress(mode, arg):
     reload(sys)
     sys.setdefaultencoding('utf8')
     os.system("adb root")
     time.sleep(2)
     parser = bootpgs_parser()
     parser.initStages()
-    parser.getLogs()
-    parser.parseLogs()
-    parser.showResult()
+    if mode == '-d':
+        parser.getLogs()
+    parser.parseLogs(arg)
+    parser.showResult(arg)
+
+if __name__ == '__main__':
+    opts, args = getopt.getopt(sys.argv[1:], "hf:d")
+    for op, value in opts:
+        if op == "-h":
+            print("Usage: \nDirect connect DUT and parse: \n\tparse_coldboot_progress.py -d")
+            print("Parse using existed logcat file: \n\tparse_coldboot_progress.py -f #logcatFile")
+            sys.exit()
+        elif op == "-f":
+            path = value
+            print("Get file {0}".format(path))
+            parse_coldboot_progress('-f', path)
+            sys.exit()
+        elif op == "-d":
+            parse_coldboot_progress('-d', None)
+            sys.exit()
 
