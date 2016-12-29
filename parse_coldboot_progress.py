@@ -111,19 +111,19 @@ class bootpgs_parser:
         out = open(outputFile, 'w')
         print("\n<=========== show boot_progress result")
         out.write("\n<========== show boot_progress result\n")
-        print('name_1, name_2, name_3, seconds, delta, proc, phase')
-        out.write('name_1, name_2, name_3, seconds, delta, proc, phase' + '\n')
+        print('name, seconds, delta, proc, phase')
+        out.write('name, seconds, delta, proc, phase' + '\n')
         for node in self.nodeList:
             if node.seconds == -1.0:
                 continue
             delta = self.nodeList[(self.nodeList.index(node)+1)%len(self.nodeList)].seconds - node.seconds
             if delta < 0: delta = 0
             if hasattr(node, "flag"):
-                print((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-s,'%(node.name) + (3-node.rank)*'\t,' + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s,'%(node.proc) + '%s'%(node.phase))
-                out.write((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-s,'%(node.name) + (3-node.rank)*'\t,' + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s,'%(node.proc) + '%s'%(node.phase) + '\n')
+                print((node.rank-1)*8*' ' + (2-node.rank)*'*' + '[' + node.flag + '] ' + '%-s,'%(node.name) + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s,'%(node.proc) + '%s'%(node.phase))
+                out.write((node.rank-1)*8*' ' + (2-node.rank)*'*' + '[' + node.flag + '] ' + '%-s,'%(node.name) + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s,'%(node.proc) + '%s'%(node.phase) + '\n')
             else:
-                print((node.rank-1)*'\t,' + '%-s,'%(node.name) + (3-node.rank)*'\t,' + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s'%(node.proc))
-                out.write((node.rank-1)*'\t,' + '%-s,'%(node.name) + (3-node.rank)*'\t,' + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s'%(node.proc)  + '\n')
+                print((node.rank-1)*8*' ' + (2-node.rank)*'*' + '%-s,'%(node.name) + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s'%(node.proc))
+                out.write((node.rank-1)*8*' ' + (2-node.rank)*'*' + '%-s,'%(node.name) + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s'%(node.proc)  + '\n')
 
         out.close()
 
