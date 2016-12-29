@@ -39,12 +39,17 @@ class svc_node(p_node):
         self.phase = phase.replace(',', '-').strip()
 
 class bootpgs_parser:
-    def __init__(self):
+    def __init__(self, needDump, inputFile, outputFile):
         self.nodeList = []
         self.outputDir = ""
         self.dmesgFile = "dmesg.log"
         self.logcatFile = "logcat.log"
-        self.resultFile = "bootprogress.csv"
+        self.needDump = needDump
+        self.inputFile = inputFile
+        if outputFile is None:
+            self.outputFile = "bootprogress.csv"
+        else:
+            self.outputFile = outputFile + ".csv"
         self.service_parser = service_parser()
 
     def initStages(self):
@@ -55,6 +60,9 @@ class bootpgs_parser:
             self.nodeList.append(stage_node(i["name"], i["filter"], i["rank"]))
 
     def getLogs(self):
+        if not self.needDump:
+            return
+
         logDir = "logs/"
         if os.path.exists(logDir) == False:
             os.makedirs(logDir)
@@ -72,14 +80,12 @@ class bootpgs_parser:
         print("... Get init.*.rc ...")
         self.service_parser.dump_initrc(self.outputDir)
         
-    def parseLogs(self, logs):
+    def parseLogs(self):
         timebase = ''
         print("... Parse logcat log ...")
-        if logs is not None:
-            logcatFile = logs
-        else:
-            logcatFile = self.outputDir + self.logcatFile
-        with open(logcatFile) as f:
+        if self.inputFile is None:
+            self.inputFile = self.outputDir + self.logcatFile
+        with open(self.inputFile) as f:
             lines = f.readlines()
         for l in lines:
             if l.find('Linux version') != -1:
@@ -97,20 +103,16 @@ class bootpgs_parser:
             
             self.service_parser.parse_service_line(l, timebase, self.nodeList)
         
-        if logs is None:
+        if self.needDump:
             self.service_parser.parse_initrc(self.outputDir)
 
         self.nodeList.sort(key=lambda x:x.seconds)
 
-    def showResult(self, logs):
+    def showResult(self):
         delta = 0.0
-        if logs is not None:
-            outputFile = self.resultFile
-        else:
-            outputFile = self.outputDir + self.resultFile
-        out = open(outputFile, 'w')
-        print("\n<=========== show boot_progress result")
-        out.write("\n<========== show boot_progress result\n")
+        out = open(self.outputFile, 'w')
+        print("<=========== show boot_progress result")
+        out.write("<========== show boot_progress result\n")
         print('name, seconds, delta, proc, phase')
         out.write('name, seconds, delta, proc, phase' + '\n')
         for node in self.nodeList:
@@ -198,31 +200,37 @@ class service_parser:
         self.svcList.append(svcnode)
         stageList.append(svcnode)
 
-def parse_coldboot_progress(mode, arg):
+def parse_coldboot_progress(needDump, inputFile, outputFile):
     reload(sys)
     sys.setdefaultencoding('utf8')
     os.system("adb root")
     time.sleep(2)
-    parser = bootpgs_parser()
+    parser = bootpgs_parser(needDump, inputFile, outputFile)
     parser.initStages()
-    if mode == '-d':
-        parser.getLogs()
-    parser.parseLogs(arg)
-    parser.showResult(arg)
+    parser.getLogs()
+    parser.parseLogs()
+    parser.showResult()
 
 if __name__ == '__main__':
-    opts, args = getopt.getopt(sys.argv[1:], "hf:d")
+    opts, args = getopt.getopt(sys.argv[1:], "hf:do:")
+    outputFile = None
+    inputFile = None
+    needDump = False
     for op, value in opts:
         if op == "-h":
-            print("Usage: \nDirect connect DUT and parse: \n\tparse_coldboot_progress.py -d")
-            print("Parse using existed logcat file: \n\tparse_coldboot_progress.py -f #logcatFile")
+            print("Usage: \nDirect connect DUT and parse: \n\tparse_coldboot_progress.py -d -o $output.csv")
+            print("Parse using existed logcat file: \n\tparse_coldboot_progress.py -f $logcatFile -o $output.csv")
             sys.exit()
         elif op == "-f":
-            path = value
-            print("Get file {0}".format(path))
-            parse_coldboot_progress('-f', path)
-            sys.exit()
+            inputFile = value
+            print("-f Get file {0}".format(inputFile))
+            #sys.exit()
         elif op == "-d":
-            parse_coldboot_progress('-d', None)
+            needDump = True
+            #sys.exit()
+        elif op == "-o":
+            outputFile = value
+            print("-o Get file {0}".format(outputFile))
+            parse_coldboot_progress(needDump, inputFile, outputFile)
             sys.exit()
 
