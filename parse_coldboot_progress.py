@@ -25,7 +25,7 @@ class stage_node(p_node):
         self.rank = rank
 
     def proc_set(self, proc):
-        self.proc = proc
+        self.proc = proc.strip()
 
 class svc_node(p_node):
     def __init__(self, name, proc, flag):
@@ -36,8 +36,7 @@ class svc_node(p_node):
         self.flag = flag
 
     def phase_set(self, phase):
-        phase = phase.replace(',', '-')
-        self.phase = phase
+        self.phase = phase.replace(',', '-').strip()
 
 class bootpgs_parser:
     def __init__(self):
@@ -120,11 +119,11 @@ class bootpgs_parser:
             delta = self.nodeList[(self.nodeList.index(node)+1)%len(self.nodeList)].seconds - node.seconds
             if delta < 0: delta = 0
             if hasattr(node, "flag"):
-                print((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s,'%(node.proc) + '%10s'%(node.phase))
-                out.write((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s,'%(node.proc) + '%10s'%(node.phase) + '\n')
+                print((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-s,'%(node.name) + (3-node.rank)*'\t,' + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s,'%(node.proc) + '%s'%(node.phase))
+                out.write((node.rank-1)*'\t,' + '[' + node.flag + '] ' + '%-s,'%(node.name) + (3-node.rank)*'\t,' + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s,'%(node.proc) + '%s'%(node.phase) + '\n')
             else:
-                print((node.rank-1)*'\t,' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc))
-                out.write((node.rank-1)*'\t,' + '%-20s,'%(node.name) + (3-node.rank)*'\t,' + '%5s,'%(str(node.seconds)) + '%5s,'%(str(delta)) + '%10s'%(node.proc)  + '\n')
+                print((node.rank-1)*'\t,' + '%-s,'%(node.name) + (3-node.rank)*'\t,' + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s'%(node.proc))
+                out.write((node.rank-1)*'\t,' + '%-s,'%(node.name) + (3-node.rank)*'\t,' + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s'%(node.proc)  + '\n')
 
         out.close()
 
@@ -193,7 +192,7 @@ class service_parser:
 
         svc_name = svc_name.replace(',', '')
         timestamp = line.split()[1]
-        proc = line.split()[2].split('/')[1].rstrip('(')
+        proc = line.split()[2].split('/')[1].rstrip('(').strip()
         svcnode = svc_node(svc_name, proc, flag)
         svcnode.time_set(timestamp, timebase)
         self.svcList.append(svcnode)
