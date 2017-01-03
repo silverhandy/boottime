@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, sys, time, string, commands, json, re, getopt
+import os, sys, time, string, commands, json, re, argparse
 
 class p_node:
     def __init__(self, name):
@@ -39,17 +39,14 @@ class svc_node(p_node):
         self.phase = phase.replace(',', '-').strip()
 
 class bootpgs_parser:
-    def __init__(self, needDump, inputFile, outputFile):
+    def __init__(self, needDump, inputFile):
         self.nodeList = []
         self.outputDir = ""
         self.dmesgFile = "dmesg.log"
         self.logcatFile = "logcat.log"
         self.needDump = needDump
         self.inputFile = inputFile
-        if outputFile is None:
-            self.outputFile = "bootprogress.csv"
-        else:
-            self.outputFile = outputFile + ".csv"
+        self.outputFile = "bootprogress.csv"
         self.service_parser = service_parser()
 
     def initStages(self):
@@ -79,13 +76,31 @@ class bootpgs_parser:
         os.system(logcatCommand)
         print("... Get init.*.rc ...")
         self.service_parser.dump_initrc(self.outputDir)
-        
-    def parseLogs(self):
+
+    def parseDmesg(self):
+        print("... Parse dmesg log ...")
+        if self.inputFile is not None:
+            inputParam = self.inputFile.split(',')[0].strip()
+            if inputParam is not '':
+                self.dmesgFile = inputParam
+        else:
+            self.dmesgFile = self.outputDir + self.dmesgFile
+        with open(self.dmesgFile) as f:
+            lines = f.readlines()
+        for l in lines:
+            pass
+
+
+    def parseLogcat(self):
         timebase = ''
         print("... Parse logcat log ...")
-        if self.inputFile is None:
-            self.inputFile = self.outputDir + self.logcatFile
-        with open(self.inputFile) as f:
+        if self.inputFile is not None:
+            inputParam = self.inputFile.split(',')[1].strip()
+            if inputParam is not '':
+                self.logcatFile = inputParam
+        else:
+            self.logcatFile = self.outputDir + self.logcatFile
+        with open(self.logcatFile) as f:
             lines = f.readlines()
         for l in lines:
             if l.find('Linux version') != -1:
@@ -107,6 +122,9 @@ class bootpgs_parser:
             self.service_parser.parse_initrc(self.outputDir)
 
         self.nodeList.sort(key=lambda x:x.seconds)
+
+    def renameOutput(self, outputFile):
+        os.rename(self.outputFile, outputFile)
 
     def showResult(self):
         delta = 0.0
@@ -200,37 +218,40 @@ class service_parser:
         self.svcList.append(svcnode)
         stageList.append(svcnode)
 
-def parse_coldboot_progress(needDump, inputFile, outputFile):
+def parse_coldboot_progress(needDump, inputFile):
     reload(sys)
     sys.setdefaultencoding('utf8')
-    os.system("adb root")
-    time.sleep(2)
-    parser = bootpgs_parser(needDump, inputFile, outputFile)
+    if needDump:
+        os.system("adb root")
+        time.sleep(2)
+    parser = bootpgs_parser(needDump, inputFile)
     parser.initStages()
     parser.getLogs()
-    parser.parseLogs()
+    parser.parseDmesg()
+    parser.parseLogcat()
     parser.showResult()
+    return parser
+
 
 if __name__ == '__main__':
-    opts, args = getopt.getopt(sys.argv[1:], "hf:do:")
-    outputFile = None
-    inputFile = None
-    needDump = False
-    for op, value in opts:
-        if op == "-h":
-            print("Usage: \nDirect connect DUT and parse: \n\tparse_coldboot_progress.py -d -o $output.csv")
-            print("Parse using existed logcat file: \n\tparse_coldboot_progress.py -f $logcatFile -o $output.csv")
-            sys.exit()
-        elif op == "-f":
-            inputFile = value
-            print("-f Get file {0}".format(inputFile))
-            #sys.exit()
-        elif op == "-d":
-            needDump = True
-            #sys.exit()
-        elif op == "-o":
-            outputFile = value
-            print("-o Get file {0}".format(outputFile))
-            parse_coldboot_progress(needDump, inputFile, outputFile)
-            sys.exit()
+    parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-d', '--direct', action='store_true', help='direct connect DUT and dump')
+    group.add_argument('-l', '--logfile', action='store', dest='logfile', help='dump from logs: dmesg,logcat')
+    
+    parser.add_argument('-o', '--output', action='store', dest='output', help='output csv file assignment')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s v1.2')
+
+    args = parser.parse_args()
+    boot_parser = None
+    if args.direct:
+        #print("__tingjiec__ args.direct")
+        boot_parser = parse_coldboot_progress(True, None)
+    elif args.logfile:
+        #print("__tingjiec__ args.logfile, logfile:" + args.logfile)
+        boot_parser = parse_coldboot_progress(False, args.logfile)
+    if args.output:
+        #print("__tingjiec__ args.output, output:" + args.output)
+        if boot_parser is not None:
+            boot_parser.renameOutput(args.output)
 
