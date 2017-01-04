@@ -1,8 +1,15 @@
 # Boot stage profiling tool #
+```
+$ python parse_coldboot_progress.py -h
+usage: parse_coldboot_progress.py [-h] (-d | -l LOGFILE) [-o OUTPUT] [-v]
 
-Usage:  
-Direct connect DUT and parse:  
-    parse_coldboot_progress.py -d -o $output.csv  
-Parse using existed logcat file:  
-    parse_coldboot_progress.py -f $logcatFile -o $output.csv  
+optional arguments:
+  -h, --help            show this help message and exit
+  -d, --direct          direct connect DUT and dump
+  -l LOGFILE, --logfile LOGFILE
+                        dump from logs: dmesg,logcat
+  -o OUTPUT, --output OUTPUT
+                        output csv file assignment
+  -v, --version         show program's version number and exit
+```
 
