@@ -46,8 +46,8 @@ class bootpgs_parser:
         self.logcatFile = "logcat.log"
         self.needDump = needDump
         self.inputFile = inputFile
-        self.outputFile = "bootprogress.csv"
-        self.service_parser = service_parser()
+        self.outputFile = "boot_progress.csv"
+        self.service_parser = service_parser(self.nodeList)
 
     def initStages(self):
         with open('coldboot_progress.json', 'r') as f:
@@ -70,15 +70,15 @@ class bootpgs_parser:
     
         dmesgCommand = "adb shell dmesg > " + self.outputDir + self.dmesgFile
         logcatCommand = "adb logcat -v time -b all -d > " + self.outputDir + self.logcatFile
-        print("... Get dmesg log ...")
+        print("<= Get dmesg log ...")
         os.system(dmesgCommand)
-        print("... Get logcat log ...")
+        print("<= Get logcat log ...")
         os.system(logcatCommand)
-        print("... Get init.*.rc ...")
-        self.service_parser.dump_initrc(self.outputDir)
+        print("<= Get init.*.rc ...")
+        self.service_parser.dumpInitrc(self.outputDir)
 
     def parseDmesg(self):
-        print("... Parse dmesg log ...")
+        print("<= Parse dmesg log ...")
         if self.inputFile is not None:
             inputParam = self.inputFile.split(',')[0].strip()
             if inputParam is not '':
@@ -93,7 +93,7 @@ class bootpgs_parser:
 
     def parseLogcat(self):
         timebase = ''
-        print("... Parse logcat log ...")
+        print("<= Parse logcat log ...")
         if self.inputFile is not None:
             inputParam = self.inputFile.split(',')[1].strip()
             if inputParam is not '':
@@ -107,8 +107,8 @@ class bootpgs_parser:
                 timebase = l.split()[1]
                 continue
             for node in self.nodeList:
-                if hasattr(node, "filterkey") and l.find(node.filterkey.encode('utf-8')) != -1:
-                    # print("find ... " + node.filterkey)
+                if hasattr(node, "filterkey") and re.search(node.filterkey, l):
+                    #print("<====== filterkey: " + node.filterkey)
                     timestamp = l.split()[1]
                     node.time_set(timestamp, timebase)
                     proc = l.split()[2].split('/')[1]
@@ -116,45 +116,51 @@ class bootpgs_parser:
                         node.proc_set(proc)
                     break
             
-            self.service_parser.parse_service_line(l, timebase, self.nodeList)
+            self.service_parser.parseSvcLine(l, timebase)
         
         if self.needDump:
-            self.service_parser.parse_initrc(self.outputDir)
+            self.service_parser.parseInitrc(self.outputDir)
 
+        self.service_parser.highlightSvc()
         self.nodeList.sort(key=lambda x:x.seconds)
 
     def renameOutput(self, outputFile):
         os.rename(self.outputFile, outputFile)
 
+    def getNameWithFlag(self, node):
+        if hasattr(node, "flag"):
+            stage_name = '[' + node.flag + '] ' + node.name
+        else:
+            stage_name = node.name
+        return stage_name
+
     def showResult(self):
-        delta = 0.0
         out = open(self.outputFile, 'w')
-        print("<=========== show boot_progress result")
-        out.write("<========== show boot_progress result\n")
-        print('name1, name2, seconds, delta, proc, phase')
-        out.write('name1, name2, seconds, delta, proc, phase' + '\n')
+        print("<= dump boot_progress result ...")
+        out.write('name1, name2, next, seconds, delta, process, trigger' + '\n')
         for node in self.nodeList:
             if node.seconds == -1.0:
                 continue
-            delta = self.nodeList[(self.nodeList.index(node)+1)%len(self.nodeList)].seconds - node.seconds
-            if delta < 0: delta = 0
+            nextIdx = (self.nodeList.index(node)+1)%len(self.nodeList)
+            if nextIdx == 0:
+                nextIdx = self.nodeList.index(node)
+            delta = self.nodeList[nextIdx].seconds - node.seconds
+            out.write((node.rank-1)*',' + (3-node.rank)*('%-s,'%(self.getNameWithFlag(node))) + '%-s,'%(self.getNameWithFlag(self.nodeList[nextIdx])) + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s'%(node.proc))
             if hasattr(node, "flag"):
-                print((node.rank-1)*',' + (3-node.rank)*('['+node.flag+'] '+'%-s,'%(node.name)) + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s,'%(node.proc) + '%s'%(node.phase))
-                out.write((node.rank-1)*',' + (3-node.rank)*('['+node.flag+'] '+'%-s,'%(node.name)) + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s,'%(node.proc) + '%s'%(node.phase) + '\n')
-            else:
-                print((node.rank-1)*',' + (3-node.rank)*('%-s,'%(node.name)) + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s'%(node.proc))
-                out.write((node.rank-1)*',' + (3-node.rank)*('%-s,'%(node.name)) + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s'%(node.proc)  + '\n')
+                out.write(',%s'%(node.phase))
+            out.write('\n')
 
         out.close()
 
 class service_parser:
-    def __init__(self):
+    def __init__(self, nodeList):
         self.svcList = []
         self.initrcList = []
+        self.nodeList = nodeList
 
 # adb shell getprop | grep ro.product.device
 #[ro.product.device]: [bxtp_abl]
-    def get_product_device(self):
+    def getProductDevice(self):
         product_device_cmd = 'getprop | grep ro.product.device'
         product_device = ''
         status, output = commands.getstatusoutput('adb shell ' + product_device_cmd)
@@ -163,17 +169,17 @@ class service_parser:
             product_device = output.split()[1].lstrip('[').rstrip(']')
         return product_device
 
-    def dump_initrc(self, outputDir):
+    def dumpInitrc(self, outputDir):
         with open('coldboot_progress.json', 'r') as f:
             data = json.load(f)
         for i in data["coldboot"]["initrc"]:
             self.initrcList.append(i["file"])
-        self.initrcList.append('init.'+self.get_product_device()+'.rc')
+        self.initrcList.append('init.'+self.getProductDevice()+'.rc')
        
         for i in self.initrcList:
             os.system('adb pull  ' + i + ' ./' + outputDir)
 
-    def parse_initrc(self, outputDir):
+    def parseInitrc(self, outputDir):
         on_phase = ''
         on_svc = ''
         for i in self.initrcList:
@@ -194,7 +200,7 @@ class service_parser:
                             j.phase_set(on_phase)
                             #print("... calling phase_set(" + on_phase + ")")
 
-    def parse_service_line(self, line, timebase, stageList):
+    def parseSvcLine(self, line, timebase):
         flag = 'X'
         svc_name = ''
         if line.find(': Starting service ') != -1:
@@ -216,7 +222,14 @@ class service_parser:
         svcnode = svc_node(svc_name, proc, flag)
         svcnode.time_set(timestamp, timebase)
         self.svcList.append(svcnode)
-        stageList.append(svcnode)
+        self.nodeList.append(svcnode)
+
+    def highlightSvc(self):
+        highSvcList = ['ueventd', 'zygote', 'servicemanager', 'rvc']
+        for i in self.nodeList:
+            for highSvc in highSvcList:
+                if highSvc == i.name:
+                    i.rank = 1
 
 def parse_coldboot_progress(needDump, inputFile):
     reload(sys)
@@ -230,6 +243,7 @@ def parse_coldboot_progress(needDump, inputFile):
     parser.parseDmesg()
     parser.parseLogcat()
     parser.showResult()
+    print("<= parse_coldboot_progress finished ...")
     return parser
 
 
