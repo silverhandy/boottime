@@ -70,15 +70,13 @@ class bootpgs_parser:
     
         dmesgCommand = "adb shell dmesg > " + self.outputDir + self.dmesgFile
         logcatCommand = "adb logcat -v time -b all -d > " + self.outputDir + self.logcatFile
-        print("<= Get dmesg log ...")
+        print("[1/4] Dump boot logs ...")
         os.system(dmesgCommand)
-        print("<= Get logcat log ...")
         os.system(logcatCommand)
-        print("<= Get init.*.rc ...")
         self.service_parser.dumpInitrc(self.outputDir)
 
     def parseDmesg(self):
-        print("<= Parse dmesg log ...")
+        print("[2/4] Parse dmesg log ...")
         if self.inputFile is not None:
             inputParam = self.inputFile.split(',')[0].strip()
             if inputParam is not '':
@@ -93,7 +91,7 @@ class bootpgs_parser:
 
     def parseLogcat(self):
         timebase = ''
-        print("<= Parse logcat log ...")
+        print("[3/4] Parse logcat log ...")
         if self.inputFile is not None:
             inputParam = self.inputFile.split(',')[1].strip()
             if inputParam is not '':
@@ -136,7 +134,7 @@ class bootpgs_parser:
 
     def showResult(self):
         out = open(self.outputFile, 'w')
-        print("<= dump boot_progress result ...")
+        print("[4/4] Generate boot progress report ...")
         out.write('name1, name2, next, seconds, delta, process, trigger' + '\n')
         for node in self.nodeList:
             if node.seconds == -1.0:
@@ -155,6 +153,7 @@ class bootpgs_parser:
 class service_parser:
     def __init__(self, nodeList):
         self.svcList = []
+        self.highSvcList = []
         self.initrcList = []
         self.nodeList = nodeList
 
@@ -225,11 +224,14 @@ class service_parser:
         self.nodeList.append(svcnode)
 
     def highlightSvc(self):
-        highSvcList = ['ueventd', 'zygote', 'servicemanager', 'rvc']
-        for i in self.nodeList:
-            for highSvc in highSvcList:
-                if highSvc == i.name:
-                    i.rank = 1
+        with open('coldboot_progress.json', 'r') as f:
+            data = json.load(f)
+        for i in data["coldboot"]["high_svc"]:
+            self.highSvcList.append(i["svc"])
+        for j in self.nodeList:
+            for svc in self.highSvcList:
+                if svc == j.name:
+                    j.rank = 1
 
 def parse_coldboot_progress(needDump, inputFile):
     reload(sys)
@@ -243,7 +245,7 @@ def parse_coldboot_progress(needDump, inputFile):
     parser.parseDmesg()
     parser.parseLogcat()
     parser.showResult()
-    print("<= parse_coldboot_progress finished ...")
+    print("[OVER] parse_coldboot_progress")
     return parser
 
 

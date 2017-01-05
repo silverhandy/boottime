@@ -32,6 +32,14 @@
 {"name": "driver_snd_soc_skl_inited", "filter": "ROM loaded, continue FW loading", "rank": 1}
 ],
 
+"high_svc": [
+{"svc": "ueventd"},
+{"svc": "zygote"},
+{"svc": "servicemanager"},
+{"svc": "surfaceflinger"},
+{"svc": "rvc"}
+],
+
 "initrc": [
 {"file": "init.rc"},
 {"file": "init.coredump.rc"},
