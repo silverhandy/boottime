@@ -4,13 +4,16 @@
 import os, sys, time, string, commands, json, re, argparse
 
 class p_node:
-    def __init__(self, name):
+    def __init__(self, name, filterkey=None, rank=2, flag=None):
         self.name = name
         self.seconds = -1.0
-        self.rank = 0
-        self.proc = ''
+        self.filterkey = filterkey
+        self.rank = rank
+        self.flag = flag
+        self.proc = None
+        self.phase = None
 
-    def time_set(self, timestamp, timebase):
+    def aptime_set(self, timestamp, timebase):
         #print("timestamp:" + timestamp + ", timebase:" + timebase)
         timestamps = timestamp.split(':')
         self.seconds = int(timestamps[0])*3600 + int(timestamps[1])*60 + float(timestamps[2])
@@ -18,25 +21,12 @@ class p_node:
             timebase = timebase.split(':')
             self.seconds = self.seconds - (int(timebase[0])*3600 + int(timebase[1])*60 + float(timebase[2]))
 
-class stage_node(p_node):
-    def __init__(self, name, filterkey, rank):
-        p_node.__init__(self, name)
-        self.filterkey = filterkey
-        self.rank = rank
+    def ktime_set(self, timestamp):
+        self.seconds = float(timestamp.strip())
 
-    def proc_set(self, proc):
-        self.proc = proc.strip()
-
-class svc_node(p_node):
-    def __init__(self, name, proc, flag):
-        p_node.__init__(self, name)
-        self.proc = proc
-        self.phase = ''
-        self.rank = 2
-        self.flag = flag
-
-    def phase_set(self, phase):
-        self.phase = phase.replace(',', '-').strip()
+    def phase_purify(self, phase):
+        if self.phase is not None:
+            self.phase = phase.replace(',', '-').strip()
 
 class bootpgs_parser:
     def __init__(self, needDump, inputFile):
@@ -54,12 +44,12 @@ class bootpgs_parser:
             data = json.load(f)
         for i in data["coldboot"]["stage"]:
             # print(i["name"], i["filter"], i["rank"])
-            self.nodeList.append(stage_node(i["name"], i["filter"], i["rank"]))
+            self.nodeList.append(p_node(i["name"], i["filter"], i["rank"]))
 
     def getLogs(self):
         if not self.needDump:
             return
-
+        print("[1/4] Dump boot logs ...")
         logDir = "logs/"
         if os.path.exists(logDir) == False:
             os.makedirs(logDir)
@@ -70,24 +60,41 @@ class bootpgs_parser:
     
         dmesgCommand = "adb shell dmesg > " + self.outputDir + self.dmesgFile
         logcatCommand = "adb logcat -v time -b all -d > " + self.outputDir + self.logcatFile
-        print("[1/4] Dump boot logs ...")
         os.system(dmesgCommand)
         os.system(logcatCommand)
         self.service_parser.dumpInitrc(self.outputDir)
 
     def parseDmesg(self):
         print("[2/4] Parse dmesg log ...")
+        #initcall_begin = r"calling  (\w+)\+0x(\w+)/0x(\w+) (\[(\w+)\])? @ (\d+)"
+        initcall_begin = r"calling  (\w+)\+0x(\w+)/0x(\w+)"
+        #initcall_end = r"initcall (\w+)+0x(\w+)/0x(\w+) (\[(\w+)\])? returned (\d+) after (\d+) usecs"
+        initcall_end = r"initcall (\w+)\+0x(\w+)/0x(\w+)"
         if self.inputFile is not None:
             inputParam = self.inputFile.split(',')[0].strip()
             if inputParam is not '':
                 self.dmesgFile = inputParam
         else:
             self.dmesgFile = self.outputDir + self.dmesgFile
+        # print("<============ open dmesg file: " + self.dmesgFile)
+        if not os.path.exists(self.dmesgFile):
+            print("[ERROR] dmesg: " + self.dmesgFile + "not existed!")
+            return
         with open(self.dmesgFile) as f:
             lines = f.readlines()
         for l in lines:
-            pass
-
+            begin_obj = re.search(initcall_begin, l)
+            if begin_obj:
+                begin_node = p_node(begin_obj.group(1))
+                begin_node.flag = 'KB'
+                begin_node.ktime_set(l.split()[1].rstrip(']'))
+                self.nodeList.append(begin_node)
+            end_obj = re.search(initcall_end, l)
+            if end_obj:
+                end_node = p_node(end_obj.group(1))
+                end_node.flag = 'KE'
+                end_node.ktime_set(l.split()[1].rstrip(']'))
+                self.nodeList.append(end_node)
 
     def parseLogcat(self):
         timebase = ''
@@ -98,6 +105,9 @@ class bootpgs_parser:
                 self.logcatFile = inputParam
         else:
             self.logcatFile = self.outputDir + self.logcatFile
+        if not os.path.exists(self.logcatFile):
+            print("[ERROR] logcat: " + self.logcatFile + "not existed!")
+            return
         with open(self.logcatFile) as f:
             lines = f.readlines()
         for l in lines:
@@ -105,20 +115,21 @@ class bootpgs_parser:
                 timebase = l.split()[1]
                 continue
             for node in self.nodeList:
-                if hasattr(node, "filterkey") and re.search(node.filterkey, l):
+                if node.filterkey is not None and re.search(node.filterkey, l):
                     #print("<====== filterkey: " + node.filterkey)
                     timestamp = l.split()[1]
-                    node.time_set(timestamp, timebase)
+                    node.aptime_set(timestamp, timebase)
                     proc = l.split()[2].split('/')[1]
                     if proc == node.filterkey:
-                        node.proc_set(proc)
+                        node.proc = proc.strip()
                     break
-            
             self.service_parser.parseSvcLine(l, timebase)
         
+    def parseLogs(self):
+        self.parseDmesg()
+        self.parseLogcat() 
         if self.needDump:
             self.service_parser.parseInitrc(self.outputDir)
-
         self.service_parser.highlightSvc()
         self.nodeList.sort(key=lambda x:x.seconds)
 
@@ -126,7 +137,7 @@ class bootpgs_parser:
         os.rename(self.outputFile, outputFile)
 
     def getNameWithFlag(self, node):
-        if hasattr(node, "flag"):
+        if node.flag is not None:
             stage_name = '[' + node.flag + '] ' + node.name
         else:
             stage_name = node.name
@@ -135,16 +146,18 @@ class bootpgs_parser:
     def showResult(self):
         out = open(self.outputFile, 'w')
         print("[4/4] Generate boot progress report ...")
-        out.write('name1, name2, next, seconds, delta, process, trigger' + '\n')
+        out.write('name1, name2, next, seconds, duration, process, trigger' + '\n')
         for node in self.nodeList:
             if node.seconds == -1.0:
                 continue
             nextIdx = (self.nodeList.index(node)+1)%len(self.nodeList)
             if nextIdx == 0:
                 nextIdx = self.nodeList.index(node)
-            delta = self.nodeList[nextIdx].seconds - node.seconds
-            out.write((node.rank-1)*',' + (3-node.rank)*('%-s,'%(self.getNameWithFlag(node))) + '%-s,'%(self.getNameWithFlag(self.nodeList[nextIdx])) + '%s,'%(str(node.seconds)) + '%s,'%(str(delta)) + '%s'%(node.proc))
-            if hasattr(node, "flag"):
+            duration = self.nodeList[nextIdx].seconds - node.seconds
+            out.write((node.rank-1)*',' + (3-node.rank)*('%-s,'%(self.getNameWithFlag(node))) + '%-s,'%(self.getNameWithFlag(self.nodeList[nextIdx])) + '%.7f,'%(node.seconds) + '%.7f'%(duration))
+            if node.proc is not None:
+                out.write(',%s'%(node.proc))
+            if node.phase is not None:
                 out.write(',%s'%(node.phase))
             out.write('\n')
 
@@ -196,7 +209,7 @@ class service_parser:
                     #print("... on_svc:" + on_svc)
                     for j in self.svcList:
                         if j.name == on_svc:
-                            j.phase_set(on_phase)
+                            j.phase_purify(on_phase)
                             #print("... calling phase_set(" + on_phase + ")")
 
     def parseSvcLine(self, line, timebase):
@@ -218,8 +231,9 @@ class service_parser:
         svc_name = svc_name.replace(',', '')
         timestamp = line.split()[1]
         proc = line.split()[2].split('/')[1].rstrip('(').strip()
-        svcnode = svc_node(svc_name, proc, flag)
-        svcnode.time_set(timestamp, timebase)
+        svcnode = p_node(svc_name)
+        svcnode.flag = flag
+        svcnode.aptime_set(timestamp, timebase)
         self.svcList.append(svcnode)
         self.nodeList.append(svcnode)
 
@@ -242,10 +256,9 @@ def parse_coldboot_progress(needDump, inputFile):
     parser = bootpgs_parser(needDump, inputFile)
     parser.initStages()
     parser.getLogs()
-    parser.parseDmesg()
-    parser.parseLogcat()
+    parser.parseLogs()
     parser.showResult()
-    print("[OVER] parse_coldboot_progress")
+    print("[DONE] parse_coldboot_progress")
     return parser
 
 
@@ -256,7 +269,7 @@ if __name__ == '__main__':
     group.add_argument('-l', '--logfile', action='store', dest='logfile', help='dump from logs: dmesg,logcat')
     
     parser.add_argument('-o', '--output', action='store', dest='output', help='output csv file assignment')
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s v1.2')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s v1.3')
 
     args = parser.parse_args()
     boot_parser = None
