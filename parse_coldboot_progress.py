@@ -119,9 +119,7 @@ class bootpgs_parser:
                     #print("<====== filterkey: " + node.filterkey)
                     timestamp = l.split()[1]
                     node.aptime_set(timestamp, timebase)
-                    proc = l.split()[2].split('/')[1]
-                    if proc == node.filterkey:
-                        node.proc = proc.strip()
+                    node.proc = l.split()[2].split('/')[1].strip()
                     break
             self.service_parser.parseSvcLine(l, timebase)
         
@@ -233,6 +231,7 @@ class service_parser:
         proc = line.split()[2].split('/')[1].rstrip('(').strip()
         svcnode = p_node(svc_name)
         svcnode.flag = flag
+        svcnode.proc = proc
         svcnode.aptime_set(timestamp, timebase)
         self.svcList.append(svcnode)
         self.nodeList.append(svcnode)
